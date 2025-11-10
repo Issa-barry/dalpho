@@ -1,0 +1,42 @@
+<div class="market-container">
+  <div class="header">
+    <h3>Marché des changes — Guinée</h3>
+    <span class="sub">Flux simulé · 1 unité = X GNF</span>
+  </div>
+
+  <div class="cards-grid">
+    <p-card *ngFor="let c of cards" class="currency-card" [ngClass]="c.dir">
+      <div class="card-top">
+        <!-- <span class="flag">{{ c.flag }}</span> -->
+        <span class="code">{{ c.code }}</span>
+      <p-tag
+  [value]="c.dir === 'up' ? '↑' : c.dir === 'down' ? '↓' : '•'"
+  [severity]="c.dir === 'up' ? 'success' : c.dir === 'down' ? 'danger' : 'info'"
+  styleClass="trend"
+  pTooltip="{{ c.dir === 'up' ? 'En hausse' : c.dir === 'down' ? 'En baisse' : 'Stable' }}"
+></p-tag>
+
+      </div>
+
+      <div class="rate">
+        <span class="val">{{ fmt(c.last, (c.code === 'GNF' || c.code === 'XOF') ? 0 : 2) }}</span>
+        <span class="symbol">{{ c.symbol }}</span>
+      </div>
+
+      <div class="change" [ngClass]="c.dir">
+        <span>{{ c.changeAbs > 0 ? '+' : '' }}{{ fmt(c.changeAbs, 2) }}</span>
+        <small>({{ fmt(c.changePct, 2) }}%)</small>
+      </div>
+
+      <div class="foot">
+        {{ c.updatedAt | date:'HH:mm:ss' }}
+      </div>
+    </p-card>
+  </div>
+
+  <div class="legend">
+    <span class="up">↑ Hausse</span>
+    <span class="down">↓ Baisse</span>
+    <span class="flat">• Stable</span>
+  </div>
+</div>

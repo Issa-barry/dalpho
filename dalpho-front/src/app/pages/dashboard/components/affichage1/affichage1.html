@@ -1,0 +1,59 @@
+<div class="fx-board">
+  <div class="board-header">
+    <h3>Marché des changes — Guinée</h3>
+    <span class="muted">Flux simulé · MID · Pivot GNF</span>
+  </div>
+
+  <p-table
+    [value]="rows"
+    [rowHover]="true"
+    styleClass="p-datatable-sm fx-table"
+    [tableStyle]="{ 'min-width': '760px' }"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Pair</th>
+        <th class="">Actuellement (GNF)</th>
+        <th>Date</th>
+        <th class="">+ Haut</th>
+        <th class="">+ Bas</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-r>
+      <tr>
+        <td class="pair">
+          <span class="sym">{{ r.pair }}</span>
+          <p-tag
+            [value]="r.dir === 'up' ? '↑' : r.dir === 'down' ? '↓' : '•'"
+            [severity]="r.dir === 'up' ? 'success' : r.dir === 'down' ? 'danger' : 'info'"
+            styleClass="dir-tag"
+            pTooltip="Tendance"
+          ></p-tag>
+        </td>
+
+        <td class=" " [ngClass]="r.dir">
+          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.last, 0) : fmt(r.last, 4) }} 
+        </td>
+
+                <td class="time">{{ r.updatedAt | date:'HH:mm:ss' }}</td>
+
+   
+        <td class="">
+          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.high, 0) : fmt(r.high, 4) }}
+        </td>
+
+        <td class="">
+          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.low, 0) : fmt(r.low, 4) }}
+        </td>
+
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <div class="legend">
+    <span class="up">↑ Hausse</span>
+    <span class="down">↓ Baisse</span>
+    <span class="flat">• Stable</span>
+  </div>
+</div>

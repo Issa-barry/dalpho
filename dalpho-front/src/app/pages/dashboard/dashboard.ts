@@ -4,17 +4,19 @@ import { StatsWidget } from './components/statswidget';
 import { RecentSalesWidget } from './components/recentsaleswidget';
 import { BestSellingWidget } from './components/bestsellingwidget';
 import { RevenueStreamWidget } from './components/revenuestreamwidget';
-import { Change } from './components/change/change';
-
+import { ChangeComponent } from './components/change/change';
+import { Affichage1Component } from './components/affichage1/affichage1';
+import { Affichage2Component } from './components/affichage2/affichage2';
+import { Affichage3Component } from './components/affichage3/affichage3';
+ 
 @Component({
     selector: 'app-dashboard',
     imports: [
-        StatsWidget, 
-        RecentSalesWidget, 
-        BestSellingWidget, 
-        RevenueStreamWidget, 
-        NotificationsWidget, 
-        Change
+         BestSellingWidget, 
+         ChangeComponent,
+        Affichage1Component,
+        Affichage2Component,
+        Affichage3Component
     ],
     templateUrl: './dashboard.html',
     styleUrl: './dashboard.scss'

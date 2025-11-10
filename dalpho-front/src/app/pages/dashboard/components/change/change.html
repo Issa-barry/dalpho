@@ -1,1 +1,114 @@
-<p>change works!</p>
+<div class="exchange-container">
+  <!-- Header avec gradient -->
+  <div class="header-section">
+    <div class="header-wrapper">
+      <div class="title-area">
+        <div class="icon-wrapper">
+          <svg class="exchange-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="main-title">Taux de Change</h1>
+          <p class="subtitle">Franc Guinéen (GNF) en temps réel</p>
+        </div>
+      </div>
+      
+      <button class="refresh-button" (click)="refreshRates()" [disabled]="loading">
+        <svg class="refresh-icon" [class.spinning]="loading" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Actualiser</span>
+      </button>
+    </div>
+    
+    <div class="update-badge">
+      <svg class="clock-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Dernière mise à jour: {{ lastUpdate | date:'dd/MM/yyyy à HH:mm:ss' }}</span>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <p class="loading-text">Chargement des taux...</p>
+  </div>
+
+  <!-- Exchange Rates -->
+  <div class="rates-container" [class.is-loading]="loading">
+    <div class="rate-card" *ngFor="let rate of exchangeRates" [class.trend-up]="rate.trend === 'up'" [class.trend-down]="rate.trend === 'down'">
+      
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="currency-badge">
+          <span class="flag-emoji">{{ rate.flag }}</span>
+          <span class="country-code">{{ rate.code.substring(0, 2) }}</span>
+        </div>
+        
+        <div class="currency-name">
+          <h3>{{ rate.code }}</h3>
+          <p>{{ rate.name }}</p>
+        </div>
+
+        <div class="trend-badge" [ngClass]="'trend-' + rate.trend">
+          <svg class="trend-icon" *ngIf="rate.trend === 'up'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg class="trend-icon" *ngIf="rate.trend === 'down'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 7L17 17M17 17H9M17 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg class="trend-icon" *ngIf="rate.trend === 'stable'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="change-percent">{{ rate.change > 0 ? '+' : '' }}{{ rate.change | number:'1.1-1' }}%</span>
+        </div>
+      </div>
+
+      <!-- Main Rate Display -->
+      <div class="rate-display">
+        <div class="conversion-row">
+          <span class="currency-symbol">{{ rate.symbol }}</span>
+          <span class="amount">1</span>
+          <span class="equals-sign">=</span>
+          <span class="gnf-value">{{ formatNumber(rate.rate) }}</span>
+          <span class="gnf-label">GNF</span>
+        </div>
+      </div>
+
+      <!-- Quick Conversions -->
+      <div class="quick-conversions">
+        <div class="conversion-item">
+          <span class="from">{{ rate.symbol }} 10</span>
+          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="to">{{ convertAmount(10, rate.rate) }} GNF</span>
+        </div>
+        
+        <div class="conversion-item">
+          <span class="from">{{ rate.symbol }} 100</span>
+          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="to">{{ convertAmount(100, rate.rate) }} GNF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="info-banner">
+    <svg class="info-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <p>Les taux de change sont indicatifs et peuvent varier selon les institutions financières.</p>
+  </div>
+</div>
