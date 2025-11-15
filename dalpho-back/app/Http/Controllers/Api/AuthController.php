@@ -17,9 +17,8 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validate([
-                'email'       => 'required|email',
-                'password'    => 'required',
-                'device_name' => 'required', // ex: "mobile", "web-app"
+                'email'    => 'required|email',
+                'password' => 'required',
             ]);
 
             $user = User::where('email', $validated['email'])->first();
@@ -28,15 +27,18 @@ class AuthController extends Controller
                 return $this->unauthorizedResponse('Identifiants invalides');
             }
 
-            // Création du token perso
-            $token = $user->createToken($validated['device_name'])->plainTextToken;
+            // Token simple (nom générique)
+            $token = $user->createToken('api-token')->plainTextToken;
 
             return $this->successResponse('Connexion réussie', [
                 'token' => $token,
-                'user'  => $user,
+                'user' => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                ]
             ]);
         } catch (Throwable $e) {
-            // ValidationException, ModelNotFound, etc. gérés par handleException
             return $this->handleException($e, 'Erreur lors de la connexion');
         }
     }
@@ -45,7 +47,6 @@ class AuthController extends Controller
     {
         try {
             $token = $request->user()?->currentAccessToken();
-
             if ($token) {
                 $token->delete();
             }
@@ -57,14 +58,12 @@ class AuthController extends Controller
     }
 
     public function logoutAll(Request $request)
-        {
-            try {
-                $request->user()?->tokens()->delete();
-
-                return $this->successResponse('Toutes les sessions ont été déconnectées');
-            } catch (Throwable $e) {
-                return $this->handleException($e, 'Erreur lors de la déconnexion globale');
-            }
+    {
+        try {
+            $request->user()?->tokens()->delete();
+            return $this->successResponse('Toutes les sessions ont été déconnectées');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Erreur lors de la déconnexion globale');
         }
-
+    }
 }

@@ -118,9 +118,9 @@ export class AuthService {
   };
 
   /** LOGIN STATELESS */
-  login(credentials: { email: string; password: string }): Observable<LoginResponse> {
+  login(credentials: { email: string; password: string }): Observable<LoginResponse> { 
     return this.http
-      .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login-stateless`, credentials)
+      .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         map(res => {
           if (!res.data) throw new Error('Réponse invalide du serveur');
