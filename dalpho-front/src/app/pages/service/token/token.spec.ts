@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Token } from './token';
+import { Token } from './token.service';
 
 describe('Token', () => {
   let service: Token;

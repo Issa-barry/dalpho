@@ -4,8 +4,8 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from 'src/environements/environment.dev';
 import { Router } from '@angular/router';
-import { TokenService } from '../token/token';
-import { Contact } from '@/pages/models/contact';
+ import { Contact } from '@/pages/models/contact';
+import { TokenService } from '../token/token.service';
  
 
 export interface ApiResponse<T = any> {
@@ -118,18 +118,25 @@ export class AuthService {
   };
 
   /** LOGIN STATELESS */
-  login(credentials: { email: string; password: string }): Observable<LoginResponse> { 
-    return this.http
-      .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
-      .pipe(
-        map(res => {
-          if (!res.data) throw new Error('Réponse invalide du serveur');
-          return res.data;
-        }),
-        tap(data => this.setAuthData(data.access_token, data.user, data.expires_in)),
-        catchError(this.handleError)
-      );
-  }
+login(credentials: { email: string; password: string }): Observable<LoginResponse> {
+  return this.http
+    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
+    .pipe(
+      map(res => {
+        if (!res.data?.access_token) {
+          throw new Error('Réponse invalide du serveur (access_token manquant)');
+        }
+        return res.data;
+      }),
+      tap(data => {
+        // ⬇️ durée de vie du token en secondes (ex : 24h)
+        const expiresInSeconds = data.expires_in ?? 60 * 60 * 24;
+        this.setAuthData(data.access_token, data.user, expiresInSeconds);
+      }),
+      catchError(this.handleError)
+    );
+}
+
 
   /** LOGOUT */
   logout(): Observable<any> {

@@ -50,7 +50,7 @@ Route::prefix('public')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -128,7 +128,7 @@ Route::prefix('public')->group(function () {
         Route::get('/stats/all', [ExchangeRateHistoryController::class, 'getStats']);
     });
 
-// });
+});
 
 
 /*

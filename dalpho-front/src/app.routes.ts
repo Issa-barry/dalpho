@@ -5,11 +5,13 @@ import { Documentation } from './app/pages/documentation/documentation';
 import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
 import { Login } from '@/pages/auth/login/login';
+import { authGuard } from '@/guards/auth.guard';
 
 export const appRoutes: Routes = [
     {
         path: 'dashboard',
         component: AppLayout,
+        // canActivate: [authGuard],
         children: [
             { path: '', component: Dashboard },
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },

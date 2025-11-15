@@ -31,7 +31,7 @@ class AuthController extends Controller
             $token = $user->createToken('api-token')->plainTextToken;
 
             return $this->successResponse('Connexion réussie', [
-                'token' => $token,
+                'access_token' => $token,
                 'user' => [
                     'id'    => $user->id,
                     'name'  => $user->name,
