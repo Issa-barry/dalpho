@@ -6,29 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreExchangeRateRequest;
 use App\Http\Resources\ExchangeRateResource;
 use App\Models\ExchangeRate;
+use App\Traits\JsonResponseTrait;
 use Illuminate\Http\JsonResponse;
+use Throwable;
 
 class ExchangeRateStoreController extends Controller
 {
+    use JsonResponseTrait;
+
     /**
      * Création d'un nouveau taux de change.
      */
     public function store(StoreExchangeRateRequest $request): JsonResponse
     {
-        $exchangeRate = ExchangeRate::create([
-            'from_currency_id' => $request->from_currency_id,
-            'to_currency_id'   => $request->to_currency_id,
-            'rate'             => $request->rate,
-            'agent_id'         => auth()->id(),
-            'effective_date'   => $request->effective_date ?? now(),
-            'is_current'       => true,
-        ]);
+        try {
+            // On récupère les données validées
+            $validated = $request->validated();
 
-        $exchangeRate->load(['fromCurrency', 'toCurrency', 'agent']);
+            $exchangeRate = ExchangeRate::create([
+                'from_currency_id' => $validated['from_currency_id'],
+                'to_currency_id'   => $validated['to_currency_id'],
+                'rate'             => $validated['rate'],
+                'agent_id'         => auth()->id(),
+                'effective_date'   => $validated['effective_date'] ?? now(),
+                'is_current'       => true,
+            ]);
 
-        return response()->json([
-            'message' => 'Taux de change créé avec succès',
-            'data'    => new ExchangeRateResource($exchangeRate),
-        ], 201);
+            $exchangeRate->load(['fromCurrency', 'toCurrency', 'agent']);
+
+            return $this->createdResponse(
+                'Taux de change créé avec succès',
+                new ExchangeRateResource($exchangeRate)
+            );
+
+        } catch (Throwable $e) {
+            return $this->handleException(
+                $e,
+                'Erreur lors de la création du taux de change'
+            );
+        }
     }
 }
