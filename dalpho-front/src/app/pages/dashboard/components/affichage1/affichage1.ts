@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { ExchangeRateDto, ExchangeRateService } from '@/pages/service/rate/echange-rate';
 
 type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
@@ -19,6 +20,8 @@ interface RateRow {
   dir: 'up' | 'down' | 'flat';
   updatedAt: Date;
 }
+
+
 
 @Component({
   selector: 'app-affichage1',
@@ -41,8 +44,13 @@ export class Affichage1Component implements OnInit, OnDestroy {
 
   rows: RateRow[] = [];
   private timer?: any;
+loading = false;
+
+
+  constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
+     this.loadRates();
     const pairs: [CCY, CCY][] = [
       ['EUR','GNF'], ['USD','GNF'], ['GBP','GNF'],
       ['CHF','GNF'], ['CAD','GNF'], ['XOF','GNF'],
@@ -62,6 +70,45 @@ export class Affichage1Component implements OnInit, OnDestroy {
 
     this.timer = setInterval(() => this.tick(), 3000);
   }
+
+   private loadRates(): void {
+    this.loading = true;
+    this.exchangeRateService.getCurrentRates().subscribe({
+      next: (res) => {
+        const data = res.data ?? [];
+        console.log("chargement : ", data);
+        
+        // Ici, tu adaptes si les noms de champs de l'API sont différents
+        this.rows = data.map((r: ExchangeRateDto): RateRow => {
+          const last = r.rate;
+          const open = r.open ?? last;
+          const high = r.high ?? last;
+          const low = r.low ?? last;
+
+          return {
+            pair: `${r.from}/${r.to}`,
+            base: r.from,
+            quote: r.to,
+            last,
+            open,
+            high,
+            low,
+            changeAbs: 0,
+            changePct: 0,
+            dir: 'flat',
+            updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Erreur chargement taux', err);
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);

@@ -28,7 +28,7 @@
 
       <div class="card-body">
         <div class="rate-section">
-          <h2 class="rate-value">{{ formatNumber(currency.rate) }}</h2>
+          <h2 class="rate-value">{{ formatNumber(currency.rate) }} GNF</h2>
           <div class="change-badge" [ngClass]="'trend-' + currency.trend">
             <i [class]="currency.trend === 'up' ? 'pi pi-arrow-up' : currency.trend === 'down' ? 'pi pi-arrow-down' : 'pi pi-minus'"></i>
             <span>{{ formatNumber(Math.abs(currency.change)) }} ({{ getPercentChange(currency) | number:'1.1-1' }}%)</span>
@@ -97,8 +97,8 @@
       </div>
 
       <div class="card-body">
-        <h3 class="card-label">Overview</h3>
-        <h2 class="overview-value">{{ formatNumber(currencies[2].rate) }}</h2>
+        <h3 class="card-label">100 €  = 11 404 000 GNF</h3>
+        <h2 class="overview-value">{{ formatNumber(currencies[2].rate) }} GNF</h2>
         <div class="overview-change" [ngClass]="'trend-' + currencies[2].trend">
           <i [class]="currencies[2].trend === 'up' ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
           <span>{{ formatNumber(Math.abs(currencies[2].change)) }}</span>
@@ -123,7 +123,7 @@
               [attr.stroke]="currencies[2].color"
               stroke-width="2"
               fill="none"
-            />
+            />GNF
           </svg>
         </div>
       </div>
