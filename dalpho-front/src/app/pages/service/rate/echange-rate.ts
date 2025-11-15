@@ -1,8 +1,9 @@
 // src/app/services/exchange-rate.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from 'src/environements/environment.dev';
+import { ExchangeRate } from '@/pages/models/ExchangeRate';
  
 export type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
@@ -43,6 +44,14 @@ export class ExchangeRateService {
       `${this.baseUrl}/exchange-rates`
     );
   }
+
+  getCurrentRatesAll() {
+  return this.http.get<{ data: any[] }>(`${this.baseUrl}/exchange-rates?current=1`)
+    .pipe(
+      map(res => res.data.map(item => new ExchangeRate(item)))
+    );
+}
+
 
   /** GET /api/public/exchange-rates/current/{from}/{to} (un seul cross) */
   getCurrentPair(from: CCY, to: CCY): Observable<ApiResponse<ExchangeRateDto>> {

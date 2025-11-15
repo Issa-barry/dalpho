@@ -2,92 +2,117 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CurrencyController;
-use App\Http\Controllers\Api\ExchangeRateController;
+
+// Nouveaux contrôleurs ExchangeRate
+use App\Http\Controllers\Api\ExchangeRate\ExchangeRateIndexController;
+use App\Http\Controllers\Api\ExchangeRate\ExchangeRateStoreController;
+use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
+use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
+
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
 
+
+// EXCHANGE RATE CONTROLLEURS SÉPARÉS
+ 
+ 
 /*
 |--------------------------------------------------------------------------
 | ROUTES PUBLIQUES (PAS D'AUTH)
 |--------------------------------------------------------------------------
 */
 
-// Login / Register
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Exemples de routes publiques pour ton module de taux
 Route::prefix('public')->group(function () {
 
-    // Currencies accessibles sans login
+    // Devise
     Route::get('/currencies/active', [CurrencyController::class, 'getActiveCurrencies']);
-    
-    // Obtenir le taux courant
-    Route::get('/exchange-rates/current/{from}/{to}', [ExchangeRateController::class, 'getCurrent']);
 
-    // Convertir un montant
-    Route::post('/exchange-rates/convert', [ExchangeRateController::class, 'convert']);
+    // Taux actuels
+    Route::get('/exchange-rates/current', [ExchangeRateIndexController::class, 'getCurrentRates']);
 
-    // Taux de change actuels
-    Route::get('/exchange-rates/current', [ExchangeRateController::class, 'getCurrentRates']);
+    // Taux pour une paire EUR/GNF
+    Route::get('/exchange-rates/current/{from}/{to}', [ExchangeRateIndexController::class, 'getCurrent']);
+
+    // Conversion
+    Route::post('/exchange-rates/convert', [ExchangeRateIndexController::class, 'convert']);
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES PROTÉGÉES AVEC AUTH SANCTUM
+| ROUTES AUTHENTIFIÉES (SANCTUM)
 |--------------------------------------------------------------------------
 */
+
 // Route::middleware('auth:sanctum')->group(function () {
 
-    // Récupérer l'utilisateur connecté
+    /*
+    |--------------------------------------------------------------------------
+    | UTILISATEUR CONNECTÉ
+    |--------------------------------------------------------------------------
+    */
     Route::get('/me', function (Request $request) {
         return response()->json([
             'success' => true,
             'message' => 'Utilisateur connecté',
-            'data'    => $request->user()
+            'data' => $request->user(),
         ]);
     });
 
-    // Déconnexion simple et déconnexion globale
     Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     });
 
+
     /*
     |--------------------------------------------------------------------------
-    | CURRENCIES (CRUD complet)
+    | CURRENCIES CRUD
     |--------------------------------------------------------------------------
     */
     Route::prefix('currencies')->group(function () {
 
-        Route::get('/', [CurrencyController::class, 'index']);        // Liste
-        Route::post('/', [CurrencyController::class, 'store']);       // Créer
-        Route::get('/{currency}', [CurrencyController::class, 'show']); // Détails
-        Route::put('/{currency}', [CurrencyController::class, 'update']); // Modifier
-        Route::delete('/{currency}', [CurrencyController::class, 'destroy']); // Supprimer
+        Route::get('/', [CurrencyController::class, 'index']);
+        Route::post('/', [CurrencyController::class, 'store']);
+        Route::get('/{currency}', [CurrencyController::class, 'show']);
+        Route::put('/{currency}', [CurrencyController::class, 'update']);
+        Route::delete('/{currency}', [CurrencyController::class, 'destroy']);
 
-        // Spécifiques
         Route::post('/{currency}/toggle-active', [CurrencyController::class, 'toggleActive']);
         Route::get('/base/currency', [CurrencyController::class, 'getBaseCurrency']);
     });
 
+
     /*
     |--------------------------------------------------------------------------
-    | EXCHANGE RATES
+    | EXCHANGE RATES (CRUD avec contrôleurs séparés)
     |--------------------------------------------------------------------------
     */
     Route::prefix('exchange-rates')->group(function () {
 
-        Route::get('/', [ExchangeRateController::class, 'index']);
-        Route::post('/', [ExchangeRateController::class, 'store']);
-        Route::get('/{exchangeRate}', [ExchangeRateController::class, 'show']);
-        Route::put('/{exchangeRate}', [ExchangeRateController::class, 'update']);
-        Route::delete('/{exchangeRate}', [ExchangeRateController::class, 'destroy']);
+        // LISTE + FILTRES
+        Route::get('/', [ExchangeRateIndexController::class, 'index']);
+
+        // CRÉER
+        Route::post('/', [ExchangeRateStoreController::class, 'store']);
+
+        // AFFICHER
+        Route::get('/{exchangeRate}', [ExchangeRateShowController::class, 'show']);
+
+        // MODIFIER
+        Route::put('/{exchangeRate}', [ExchangeRateUpdateDestroyController::class, 'update']);
+        Route::patch('/{exchangeRate}', [ExchangeRateUpdateDestroyController::class, 'update']);
+
+        // SUPPRIMER
+        Route::delete('/{exchangeRate}', [ExchangeRateUpdateDestroyController::class, 'destroy']);
     });
+
 
     /*
     |--------------------------------------------------------------------------
@@ -102,4 +127,17 @@ Route::prefix('public')->group(function () {
         Route::get('/recent/all', [ExchangeRateHistoryController::class, 'getRecent']);
         Route::get('/stats/all', [ExchangeRateHistoryController::class, 'getStats']);
     });
+
 // });
+
+
+/*
+|--------------------------------------------------------------------------
+| DEBUG TOKEN (à désactiver en production)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/debug/create-token', function () {
+    $user = \App\Models\User::first();
+    return ['token' => $user->createToken('postman')->plainTextToken];
+});

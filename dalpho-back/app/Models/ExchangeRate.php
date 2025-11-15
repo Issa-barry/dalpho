@@ -9,176 +9,182 @@ class ExchangeRate extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'from_currency_id',
         'to_currency_id',
         'rate',
         'agent_id',
         'effective_date',
-        'is_current'
+        'is_current',
+
+        // High / Low du jour
+        'day_high',
+        'day_low',
+
+        // Variation
+        'change_abs',
+        'change_pct',
+        'direction'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'rate' => 'decimal:4',
+        'day_high' => 'decimal:4',
+        'day_low' => 'decimal:4',
+        'change_abs' => 'decimal:4',
+        'change_pct' => 'decimal:4',
         'is_current' => 'boolean',
         'effective_date' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
-    /**
-     * Relation : Devise source
-     */
+    /* ===================== RELATIONS ===================== */
+
     public function fromCurrency()
     {
         return $this->belongsTo(Currency::class, 'from_currency_id');
     }
 
-    /**
-     * Relation : Devise cible
-     */
     public function toCurrency()
     {
         return $this->belongsTo(Currency::class, 'to_currency_id');
     }
 
-    /**
-     * Relation : Agent qui a créé/modifié le taux
-     */
     public function agent()
     {
         return $this->belongsTo(User::class, 'agent_id');
     }
 
-    /**
-     * Relation : Historique des modifications
-     */
     public function history()
     {
         return $this->hasMany(ExchangeRateHistory::class)->orderBy('created_at', 'desc');
     }
 
-    /**
-     * Boot method pour gérer les événements du modèle
-     */
+    /* ===================== BOOT MODEL ===================== */
+
     protected static function boot()
     {
         parent::boot();
 
-        // Avant de créer un nouveau taux
-        static::creating(function ($exchangeRate) {
-            // Désactiver les anciens taux pour la même paire de devises
-            self::where('from_currency_id', $exchangeRate->from_currency_id)
-                ->where('to_currency_id', $exchangeRate->to_currency_id)
+        /**
+         * Lors de la création d’un nouveau taux :
+         * - désactive les anciens taux
+         * - initialise high/low
+         * - calcule la tendance (aucune sur création)
+         */
+        static::creating(function ($rate) {
+
+            // Désactive l'ancien "taux actuel"
+            self::where('from_currency_id', $rate->from_currency_id)
+                ->where('to_currency_id', $rate->to_currency_id)
                 ->where('is_current', true)
                 ->update(['is_current' => false]);
+
+            // high/low initial = valeur courante
+            $rate->day_high = $rate->rate;
+            $rate->day_low = $rate->rate;
+
+            // aucune variation à la création
+            $rate->change_abs = 0;
+            $rate->change_pct = 0;
+            $rate->direction = "flat";
         });
 
-        // Après création, enregistrer dans l'historique
-        static::created(function ($exchangeRate) {
-            ExchangeRateHistory::create([
-                'exchange_rate_id' => $exchangeRate->id,
-                'from_currency_id' => $exchangeRate->from_currency_id,
-                'to_currency_id' => $exchangeRate->to_currency_id,
-                'old_rate' => null,
-                'new_rate' => $exchangeRate->rate,
-                'changed_by' => $exchangeRate->agent_id,
-                'change_reason' => 'Création initiale du taux de change'
-            ]);
-        });
+        /**
+         * Lors de la mise à jour :
+         * - calcule la variation
+         * - met à jour high/low si nécessaire
+         * - enregistre l'historique
+         */
+        static::updating(function ($rate) {
 
-        // Avant de mettre à jour un taux
-        static::updating(function ($exchangeRate) {
-            // Si le taux change, créer une entrée dans l'historique
-            if ($exchangeRate->isDirty('rate')) {
-                $oldRate = $exchangeRate->getOriginal('rate');
-                
+            // Ancienne valeur
+            $old = $rate->getOriginal('rate');
+
+            if ($rate->isDirty('rate')) {
+
+                // Variation absolue
+                $rate->change_abs = $rate->rate - $old;
+
+                // Variation en %
+                $rate->change_pct = $old > 0
+                    ? (($rate->rate - $old) / $old) * 100
+                    : 0;
+
+                // Direction
+                $rate->direction =
+                    ($rate->rate > $old) ? 'up' :
+                    (($rate->rate < $old) ? 'down' : 'flat');
+
+                // High / Low du jour
+                $rate->day_high = max($rate->day_high, $rate->rate);
+                $rate->day_low  = min($rate->day_low, $rate->rate);
+
+                // Historique
                 ExchangeRateHistory::create([
-                    'exchange_rate_id' => $exchangeRate->id,
-                    'from_currency_id' => $exchangeRate->from_currency_id,
-                    'to_currency_id' => $exchangeRate->to_currency_id,
-                    'old_rate' => $oldRate,
-                    'new_rate' => $exchangeRate->rate,
-                    'changed_by' => auth()->id() ?? $exchangeRate->agent_id,
-                    'change_reason' => 'Mise à jour du taux de change'
+                    'exchange_rate_id'   => $rate->id,
+                    'from_currency_id'   => $rate->from_currency_id,
+                    'to_currency_id'     => $rate->to_currency_id,
+                    'old_rate'           => $old,
+                    'new_rate'           => $rate->rate,
+                    'changed_by'         => auth()->id() ?? $rate->agent_id,
+                    'change_reason'      => 'Mise à jour du taux de change',
                 ]);
             }
         });
+
+        /**
+         * Après création — on logue l’historique
+         */
+        static::created(function ($rate) {
+            ExchangeRateHistory::create([
+                'exchange_rate_id' => $rate->id,
+                'from_currency_id' => $rate->from_currency_id,
+                'to_currency_id'   => $rate->to_currency_id,
+                'old_rate'         => null,
+                'new_rate'         => $rate->rate,
+                'changed_by'       => $rate->agent_id,
+                'change_reason'    => 'Création initiale du taux de change'
+            ]);
+        });
     }
 
-    /**
-     * Scope : Taux actuels uniquement
-     */
+    /* ===================== SCOPES ===================== */
+
     public function scopeCurrent($query)
     {
         return $query->where('is_current', true)
                      ->where('effective_date', '<=', now());
     }
 
-    /**
-     * Scope : Taux pour une paire de devises spécifique
-     */
-    public function scopeForPair($query, $fromCurrencyId, $toCurrencyId)
+    public function scopeForPair($query, $fromId, $toId)
     {
-        return $query->where('from_currency_id', $fromCurrencyId)
-                     ->where('to_currency_id', $toCurrencyId);
+        return $query->where('from_currency_id', $fromId)
+                     ->where('to_currency_id', $toId);
     }
 
-    /**
-     * Scope : Taux effectifs à une date donnée
-     */
     public function scopeEffectiveAt($query, $date)
     {
         return $query->where('effective_date', '<=', $date)
                      ->orderBy('effective_date', 'desc');
     }
 
-    /**
-     * Convertir un montant avec ce taux
-     *
-     * @param float $amount
-     * @return float
-     */
+    /* ===================== HELPERS ===================== */
+
     public function convert($amount)
     {
         return $amount * $this->rate;
     }
 
-    /**
-     * Obtenir le taux inverse
-     *
-     * @return float
-     */
     public function getInverseRate()
     {
-        return 1 / $this->rate;
+        return $this->rate > 0 ? 1 / $this->rate : 0;
     }
 
-    /**
-     * Formater le taux pour l'affichage
-     *
-     * @return string
-     */
     public function getFormattedRateAttribute()
     {
         return number_format($this->rate, 4, '.', ' ');
     }
 
-    /**
-     * Obtenir la description du taux
-     *
-     * @return string
-     */
     public function getDescriptionAttribute()
     {
         return "1 {$this->fromCurrency->code} = {$this->formatted_rate} {$this->toCurrency->code}";

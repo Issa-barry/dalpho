@@ -1,104 +1,100 @@
+// src/app/pages/components/affichage1/affichage1.component.ts
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { ExchangeRateDto, ExchangeRateService } from '@/pages/service/rate/echange-rate';
+
+import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
+import { ExchangeRate, RateDirection } from '@/pages/models/ExchangeRate';
 
 type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
 interface RateRow {
-  pair: string;          // ex: "EUR/GNF"
+  pair: string;
   base: CCY;
   quote: CCY;
-  last: number;          // dernier cours (mid)
-  open: number;          // cours d'ouverture (session)
-  high: number;          // plus haut session
-  low: number;           // plus bas session
-  changeAbs: number;     // variation absolue vs open
-  changePct: number;     // variation %
-  dir: 'up' | 'down' | 'flat';
+  last: number;
+  open: number;
+  high: number;
+  low: number;
+  changeAbs: number;
+  changePct: number;
+  dir: RateDirection;
   updatedAt: Date;
 }
-
-
 
 @Component({
   selector: 'app-affichage1',
   standalone: true,
   imports: [CommonModule, TableModule, TagModule, TooltipModule],
   templateUrl: './affichage1.html',
-  styleUrl: './affichage1.scss'
+  styleUrl: './affichage1.scss',
 })
 export class Affichage1Component implements OnInit, OnDestroy {
-  /** Cours MID contre GNF (pivot) à l’ouverture */
-  private openAgainstGNF: Record<CCY, number> = {
-    GNF: 1,
-    EUR: 10700,  // 1 € = 10 700 GNF
-    USD: 9500,
-    XOF: 17.5,
-    GBP: 12500,
-    CHF: 10800,
-    CAD: 7200,
-  };
-
+  taux: ExchangeRate[] = [];
   rows: RateRow[] = [];
-  private timer?: any;
-loading = false;
+  loading = false;
 
+  private timer?: any; // tu peux le supprimer si tu es sûr de ne pas l’utiliser
 
   constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
-     this.loadRates();
-    const pairs: [CCY, CCY][] = [
-      ['EUR','GNF'], ['USD','GNF'], ['GBP','GNF'],
-      ['CHF','GNF'], ['CAD','GNF'], ['XOF','GNF'],
-      ['EUR','USD'], ['EUR','XOF'], ['USD','XOF']
-    ];
-
-    this.rows = pairs.map(([b, q]) => {
-      const last = this.computeCross(b, q);
-      return {
-        pair: `${b}/${q}`,
-        base: b, quote: q,
-        last, open: last, high: last, low: last,
-        changeAbs: 0, changePct: 0, dir: 'flat',
-        updatedAt: new Date()
-      };
-    });
-
-    this.timer = setInterval(() => this.tick(), 3000);
+    this.loadRates();
   }
 
-   private loadRates(): void {
+  ngOnDestroy(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  }
+
+  /** Charge les taux depuis la BDD et les mappe vers les lignes du tableau */
+  private loadRates(): void {
     this.loading = true;
+
     this.exchangeRateService.getCurrentRates().subscribe({
       next: (res) => {
         const data = res.data ?? [];
-        console.log("chargement : ", data);
-        
-        // Ici, tu adaptes si les noms de champs de l'API sont différents
-        this.rows = data.map((r: ExchangeRateDto): RateRow => {
-          const last = r.rate;
-          const open = r.open ?? last;
-          const high = r.high ?? last;
-          const low = r.low ?? last;
 
-          return {
-            pair: `${r.from}/${r.to}`,
-            base: r.from,
-            quote: r.to,
-            last,
-            open,
-            high,
-            low,
-            changeAbs: 0,
-            changePct: 0,
-            dir: 'flat',
-            updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
-          };
-        });
+        // modèles ExchangeRate
+        this.taux = data.map((item: any) => new ExchangeRate(item));
+
+        // mapping pour le tableau
+        this.rows = this.taux
+          .filter(r => !!r.from_currency?.code && !!r.to_currency?.code)
+          .map((r): RateRow => {
+            const base  = r.from_currency!.code as CCY;
+            const quote = r.to_currency!.code as CCY;
+            const last  = r.rate;
+
+            const high = r.day_high ?? r.high ?? r.rate;
+            const low  = r.day_low  ?? r.low  ?? r.rate;
+
+            const open = r.rate; // si tu ajoutes "open" côté back tu pourras le remplacer
+
+            const changeAbs = r.change_abs ?? 0;
+            const changePct = r.change_pct ?? 0;
+
+            const dir: RateDirection = r.direction ?? 'flat';
+
+            return {
+              pair: `${base}/${quote}`,
+              base,
+              quote,
+              last,
+              open,
+              high,
+              low,
+              changeAbs,
+              changePct,
+              dir,
+              updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+            };
+          });
+
+        console.log('rows BDD: ', this.rows);
       },
       error: (err) => {
         console.error('Erreur chargement taux', err);
@@ -109,55 +105,10 @@ loading = false;
     });
   }
 
-
-  ngOnDestroy(): void {
-    if (this.timer) clearInterval(this.timer);
-  }
-
-  /** Cross via pivot GNF si nécessaire */
-  private computeCross(from: CCY, to: CCY): number {
-    if (from === to) return 1;
-    const gnfPerFrom = this.openAgainstGNF[from];
-    const gnfPerTo = this.openAgainstGNF[to];
-    return gnfPerFrom / gnfPerTo;
-  }
-
-  /** Petite variation de marché (+/- 0,30% par tick) */
-  private perturb(value: number): number {
-    const max = 0.003; // 30 bps
-    const drift = (Math.random() * 2 - 1) * max;
-    return value * (1 + drift);
-  }
-
-  private tick(): void {
-    this.rows = this.rows.map(r => {
-      let next = this.perturb(r.last);
-      const decimals = (r.quote === 'GNF' || r.quote === 'XOF') ? 0 : 4;
-      next = Number(next.toFixed(decimals));
-
-      const high = Math.max(r.high, next);
-      const low  = Math.min(r.low, next);
-      const changeAbs = next - r.open;
-      const changePct = r.open ? (changeAbs / r.open) * 100 : 0;
-      const dir: RateRow['dir'] =
-        changeAbs > 0.0000001 ? 'up' : changeAbs < -0.0000001 ? 'down' : 'flat';
-
-      return {
-        ...r,
-        last: next,
-        high, low,
-        changeAbs,
-        changePct,
-        dir,
-        updatedAt: new Date()
-      };
-    });
-  }
-
   fmt(n: number, decimals = 2): string {
     return n.toLocaleString(undefined, {
       minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      maximumFractionDigits: decimals,
     });
   }
 }

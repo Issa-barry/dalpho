@@ -64,3 +64,5 @@ class CurrencySeeder extends Seeder
         DB::table('currencies')->insert($currencies);
     }
 }
+
+//php artisan db:seed --class=CurrencySeeder

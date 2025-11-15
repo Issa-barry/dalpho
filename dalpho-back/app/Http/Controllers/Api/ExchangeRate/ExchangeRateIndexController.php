@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\ExchangeRate;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreExchangeRateRequest;
-use App\Http\Requests\UpdateExchangeRateRequest;
 use App\Http\Resources\ExchangeRateResource;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
@@ -12,13 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class ExchangeRateController extends Controller
+class ExchangeRateIndexController extends Controller
 {
     /**
      * Liste paginée des taux de change.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -53,83 +48,7 @@ class ExchangeRateController extends Controller
     }
 
     /**
-     * Création d'un nouveau taux de change.
-     *
-     * @param  \App\Http\Requests\StoreExchangeRateRequest  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(StoreExchangeRateRequest $request): JsonResponse
-    {
-        $exchangeRate = ExchangeRate::create([
-            'from_currency_id' => $request->from_currency_id,
-            'to_currency_id'   => $request->to_currency_id,
-            'rate'             => $request->rate,
-            'agent_id'         => auth()->id(),
-            'effective_date'   => $request->effective_date ?? now(),
-            'is_current'       => true,
-        ]);
-
-        $exchangeRate->load(['fromCurrency', 'toCurrency', 'agent']);
-
-        return response()->json([
-            'message' => 'Taux de change créé avec succès',
-            'data'    => new ExchangeRateResource($exchangeRate),
-        ], 201);
-    }
-
-    /**
-     * Détail d'un taux de change.
-     *
-     * @param  \App\Models\ExchangeRate  $exchangeRate
-     * @return \App\Http\Resources\ExchangeRateResource
-     */
-    public function show(ExchangeRate $exchangeRate): ExchangeRateResource
-    {
-        $exchangeRate->load(['fromCurrency', 'toCurrency', 'agent', 'history.changedBy']);
-
-        return new ExchangeRateResource($exchangeRate);
-    }
-
-    /**
-     * Mise à jour d'un taux de change.
-     *
-     * @param  \App\Http\Requests\UpdateExchangeRateRequest  $request
-     * @param  \App\Models\ExchangeRate  $exchangeRate
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(UpdateExchangeRateRequest $request, ExchangeRate $exchangeRate): JsonResponse
-    {
-        $exchangeRate->update($request->validated());
-
-        $exchangeRate->load(['fromCurrency', 'toCurrency', 'agent']);
-
-        return response()->json([
-            'message' => 'Taux de change mis à jour avec succès',
-            'data'    => new ExchangeRateResource($exchangeRate),
-        ]);
-    }
-
-    /**
-     * Suppression d'un taux de change.
-     *
-     * @param  \App\Models\ExchangeRate  $exchangeRate
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy(ExchangeRate $exchangeRate): JsonResponse
-    {
-        $exchangeRate->delete();
-
-        return response()->json([
-            'message' => 'Taux de change supprimé avec succès',
-        ], 200);
-    }
-
-    /**
      * Obtenir le taux de change actuel entre deux devises (par code).
-     *
-     * @param  string  $fromCode  Code devise source (ex: EUR)
-     * @param  string  $toCode    Code devise cible (ex: GNF)
-     * @return \Illuminate\Http\JsonResponse
      */
     public function getCurrent(string $fromCode, string $toCode): JsonResponse
     {
@@ -160,9 +79,6 @@ class ExchangeRateController extends Controller
 
     /**
      * Convertir un montant entre deux devises.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function convert(Request $request): JsonResponse
     {
@@ -201,10 +117,6 @@ class ExchangeRateController extends Controller
 
     /**
      * Obtenir tous les taux actuels (non paginés).
-     * Les champs high/low/day_high/day_low sont déjà exposés
-     * via les accessors du modèle et la resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function getCurrentRates(): JsonResponse
     {

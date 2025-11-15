@@ -6,23 +6,22 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateExchangeRateRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        // Pour l’instant on autorise tout utilisateur authentifié
+        // si tu n'as pas encore mis Sanctum partout, tu peux laisser true
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            // "sometimes" = seulement si le champ est présent dans le JSON
+            'from_currency_id' => 'sometimes|exists:currencies,id',
+            'to_currency_id'   => 'sometimes|exists:currencies,id',
+            'rate'             => 'sometimes|numeric|min:0',
+            'effective_date'   => 'sometimes|date',
+            'is_current'       => 'sometimes|boolean',
         ];
     }
 }

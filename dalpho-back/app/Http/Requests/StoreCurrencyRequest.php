@@ -11,7 +11,8 @@ class StoreCurrencyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        // Pour le moment on autorise tous les users authentifiés
+        return auth()->check(); // ou simplement: return true;
     }
 
     /**
@@ -22,7 +23,11 @@ class StoreCurrencyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+        'code' => 'sometimes|string|max:5|unique:currencies,code,' . $this->currency,
+        'name' => 'sometimes|string|max:100',
+        'symbol' => 'sometimes|string|max:10',
+        'is_active' => 'sometimes|boolean',
+        'is_base_currency' => 'sometimes|boolean'
         ];
     }
 }

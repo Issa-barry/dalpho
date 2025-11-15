@@ -1,7 +1,7 @@
-<div class="fx-board ">
+<div class="fx-board">
   <div class="board-header">
-    <h3>Marché des changes — Guinéen</h3>
-    <span class="muted">Flux simulé · MID · Pivot GNF</span>
+    <h3>Marché des changes — Guinée</h3>
+    <span class="muted">Taux actuels · MID · Données BDD</span>
   </div>
 
   <p-table
@@ -13,10 +13,10 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Pair</th>
-        <th class="">Actuellement (GNF)</th>
-        <th>Date</th>
-        <th class="">+ Haut</th>
-        <th class="">+ Bas</th>
+        <th>Actuellement</th>
+        <th>Dernière mise à jour</th>
+        <th>+ Haut</th>
+        <th>+ Bas</th>
       </tr>
     </ng-template>
 
@@ -26,27 +26,50 @@
           <span class="sym">{{ r.pair }}</span>
           <p-tag
             [value]="r.dir === 'up' ? '↑' : r.dir === 'down' ? '↓' : '•'"
-            [severity]="r.dir === 'up' ? 'success' : r.dir === 'down' ? 'danger' : 'info'"
+            [severity]="
+              r.dir === 'up'
+                ? 'success'
+                : r.dir === 'down'
+                ? 'danger'
+                : 'info'
+            "
             styleClass="dir-tag"
-            pTooltip="Tendance"
+            pTooltip="Variation {{ fmt(r.changePct, 2) }} %"
           ></p-tag>
         </td>
 
-        <td class=" " [ngClass]="r.dir">
-          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.last, 0) : fmt(r.last, 4) }} 
+        <td [ngClass]="r.dir">
+          <span class="value">
+            {{
+              (r.quote === 'GNF' || r.quote === 'XOF')
+                ? fmt(r.last, 0)
+                : fmt(r.last, 4)
+            }}
+          </span>
+          <span class="delta" *ngIf="r.changePct !== 0">
+            ({{ r.changePct > 0 ? '+' : '' }}{{ fmt(r.changePct, 2) }} %)
+          </span>
         </td>
 
-                <td class="time">{{ r.updatedAt | date:'HH:mm:ss' }}</td>
-
-   
-        <td class="">
-          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.high, 0) : fmt(r.high, 4) }}
+        <td class="time">
+          {{ r.updatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}
         </td>
 
-        <td class="">
-          {{ (r.quote === 'GNF' || r.quote === 'XOF') ? fmt(r.low, 0) : fmt(r.low, 4) }}
+        <td>
+          {{
+            (r.quote === 'GNF' || r.quote === 'XOF')
+              ? fmt(r.high, 0)
+              : fmt(r.high, 4)
+          }}
         </td>
 
+        <td>
+          {{
+            (r.quote === 'GNF' || r.quote === 'XOF')
+              ? fmt(r.low, 0)
+              : fmt(r.low, 4)
+          }}
+        </td>
       </tr>
     </ng-template>
   </p-table>
