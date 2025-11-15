@@ -17,8 +17,14 @@ import { RippleModule } from 'primeng/ripple';
 })
 export class Login {
      email: string = '';
-
     password: string = '';
-
     checked: boolean = false;
+
+    submited: boolean = false;
+
+
+
+    login() {
+        this.submited = true; 
+    }
 }
