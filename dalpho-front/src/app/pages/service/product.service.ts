@@ -26,11 +26,11 @@ export class ProductService {
             {
                 id: '1000',
                 code: 'f230fh0g3',
-                name: 'Bamboo Watch',
-                description: 'Product Description',
+                name: 'Euro',
+                description: 'EUR',
                 image: 'bamboo-watch.jpg',
-                price: 65,
-                category: 'Accessories',
+                price: 10700,
+                category: '€',
                 quantity: 24,
                 inventoryStatus: 'INSTOCK',
                 rating: 5
@@ -38,11 +38,11 @@ export class ProductService {
             {
                 id: '1001',
                 code: 'nvklal433',
-                name: 'Black Watch',
-                description: 'Product Description',
+                name: 'DOLLAR USD',
+                description: 'USD',
                 image: 'black-watch.jpg',
-                price: 72,
-                category: 'Accessories',
+                price: 8610,
+                category: '$',
                 quantity: 61,
                 inventoryStatus: 'INSTOCK',
                 rating: 4

@@ -29,8 +29,9 @@ export class LayoutService {
     _config: layoutConfig = {
         preset: 'Aura',
         primary: 'emerald',
-        surface: null,
-        darkTheme: false,
+        // surface: null,
+        surface: 'slate',
+        darkTheme: true,
         menuMode: 'static'
     };
 

@@ -1,0 +1,94 @@
+<div class="affichage2-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Affichage carte</h1>
+      <p class="page-subtitle">
+        Mise à jour : {{ lastUpdate | date: 'HH:mm:ss' }}
+      </p>
+    </div>
+
+    <button class="refresh-btn" (click)="refreshRates()" [disabled]="loading">
+      <i class="pi pi-refresh" [class.spinning]="loading"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- GRID des cartes -->
+  <div class="currency-grid" [class.loading]="loading">
+
+    <div class="currency-card card-overview" *ngFor="let c of cards">
+      <div class="card-header">
+        <div class="currency-info">
+          <span class="currency-code">{{ c.code }}</span>
+          <span class="currency-label">{{ c.label }}</span>
+        </div>
+        <span class="time">{{ c.lastUpdate | date: 'HH:mm' }}</span>
+      </div>
+
+      <div class="card-body">
+        <!-- Ligne type "100 € = 11 404 000 GNF" -->
+        <p class="card-subline" *ngIf="c.pair.endsWith('/GNF')">
+          {{ c.baseAmount | number:'1.0-0' }} {{ c.code }} ≈
+          {{ formatNumber(c.baseEquivalent, 0) }} GNF
+        </p>
+
+        <!-- Valeur principale -->
+        <h2 class="overview-value">
+          {{ formatNumber(c.rate, 2) }} GNF
+        </h2>
+
+        <!-- Variation 24h -->
+        <div class="overview-change" [ngClass]="'trend-' + c.trend">
+          <i
+            [class]="
+              c.trend === 'up'
+                ? 'pi pi-arrow-up'
+                : c.trend === 'down'
+                ? 'pi pi-arrow-down'
+                : 'pi pi-minus'
+            "
+          ></i>
+          <span class="change-amount">
+            {{ formatNumber(Math.abs(c.changeAbs), 2) }}
+          </span>
+          <span class="change-percent">
+            ({{ getPercentChange(c) | number:'1.1-1' }}%)
+          </span>
+          <span class="period">24h</span>
+        </div>
+
+        <!-- Courbe remplie -->
+        <div class="area-chart">
+          <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient [attr.id]="'areaGradient-' + c.code" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" [attr.stop-color]="c.color" stop-opacity="0.45" />
+                <stop offset="100%" [attr.stop-color]="c.color" stop-opacity="0.05" />
+              </linearGradient>
+            </defs>
+
+            <polygon
+              [attr.points]="getAreaPoints(c.sparklineData)"
+              [attr.fill]="'url(#areaGradient-' + c.code + ')'"
+            ></polygon>
+
+            <polyline
+              [attr.points]="getSparklinePoints(c.sparklineData)"
+              [attr.stroke]="c.color"
+              stroke-width="2"
+              fill="none"
+            ></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Info -->
+  <div class="info-notice">
+    <i class="pi pi-info-circle"></i>
+    <p>Les taux de change sont indicatifs et mis à jour toutes les 30&nbsp;secondes.</p>
+  </div>
+</div>
