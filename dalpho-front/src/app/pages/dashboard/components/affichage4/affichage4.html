@@ -1,0 +1,167 @@
+<div class="affichage2-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <!-- <h1 class="page-title">Taux de Change</h1> -->
+      <h1 class="page-title">Affichage carte</h1>
+      <p class="page-subtitle">Mise à jour: {{ lastUpdate | date:'HH:mm:ss' }}</p>
+    </div>
+    
+    <button class="refresh-btn" (click)="refreshRates()" [disabled]="loading">
+      <i class="pi pi-refresh" [class.spinning]="loading"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- Currency Cards Grid -->
+  <div class="currency-grid" [class.loading]="loading">
+    
+    <!-- Card 1: EUR - Watch List Style -->
+    <div class="currency-card card-watchlist" *ngFor="let currency of currencies.slice(0, 3); let i = index">
+      <div class="card-header">
+        <div class="currency-info">
+          <span class="currency-code">{{ currency.code }}</span>
+          <span class="currency-flag">{{ currency.flag }}</span>
+        </div>
+        <span class="time">{{ lastUpdate | date:'HH:mm' }}</span>
+      </div>
+
+      <div class="card-body">
+        <div class="rate-section">
+          <h2 class="rate-value">{{ formatNumber(currency.rate) }} GNF</h2>
+          <div class="change-badge" [ngClass]="'trend-' + currency.trend">
+            <i [class]="currency.trend === 'up' ? 'pi pi-arrow-up' : currency.trend === 'down' ? 'pi pi-arrow-down' : 'pi pi-minus'"></i>
+            <span>{{ formatNumber(Math.abs(currency.change)) }} ({{ getPercentChange(currency) | number:'1.1-1' }}%)</span>
+          </div>
+        </div>
+
+        <!-- Mini Sparkline -->
+        <div class="sparkline-container">
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <polyline
+              [attr.points]="getSparklinePoints(currency.sparklineData)"
+              [attr.stroke]="currency.color"
+              stroke-width="2"
+              fill="none"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Progress Dots -->
+      <div class="progress-dots">
+        <span class="dot" [class.active]="i === 0"></span>
+        <span class="dot" [class.active]="i === 1"></span>
+        <span class="dot" [class.active]="i === 2"></span>
+      </div>
+    </div>
+
+    <!-- Card 2: USD - Volume Style -->
+    <div class="currency-card card-volume">
+      <div class="card-header">
+        <div class="currency-info">
+          <span class="currency-code">{{ currencies[1].code }}</span>
+          <span class="currency-flag">{{ currencies[1].flag }}</span>
+        </div>
+        <span class="time">{{ lastUpdate | date:'HH:mm' }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="card-label">Volume</h3>
+        <h2 class="volume-value">{{ formatNumber(currencies[1].rate) }} <span class="unit">GNF</span></h2>
+        <div class="volume-change" [ngClass]="'trend-' + currencies[1].trend">
+          <i [class]="currencies[1].trend === 'up' ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
+          <span>{{ formatNumber(Math.abs(currencies[1].change)) }}</span>
+          <span class="period">24h</span>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="bar-chart">
+          <div class="bar" *ngFor="let val of currencies[1].sparklineData" 
+               [style.height.%]="getBarHeight(val, currencies[1].sparklineData)"
+               [class.positive]="currencies[1].trend === 'up'"
+               [class.negative]="currencies[1].trend === 'down'">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: GBP - Overview Style -->
+    <div class="currency-card card-overview">
+      <div class="card-header">
+        <div class="currency-info">
+          <span class="currency-code">{{ currencies[2].code }}</span>
+          <span class="currency-flag">{{ currencies[2].flag }}</span>
+        </div>
+        <span class="time">{{ lastUpdate | date:'HH:mm' }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="card-label">100 €  = 11 404 000 GNF</h3>
+        <h2 class="overview-value">{{ formatNumber(currencies[2].rate) }} GNF</h2>
+        <div class="overview-change" [ngClass]="'trend-' + currencies[2].trend">
+          <i [class]="currencies[2].trend === 'up' ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
+          <span>{{ formatNumber(Math.abs(currencies[2].change)) }}</span>
+          <span class="period">24h</span>
+        </div>
+
+        <!-- Area Chart -->
+        <div class="area-chart">
+          <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" [attr.stop-color]="currencies[2].color" stop-opacity="0.5"/>
+                <stop offset="100%" [attr.stop-color]="currencies[2].color" stop-opacity="0.05"/>
+              </linearGradient>
+            </defs>
+            <polygon
+              [attr.points]="getAreaPoints(currencies[2].sparklineData)"
+              fill="url(#areaGradient)"
+            />
+            <polyline
+              [attr.points]="getSparklinePoints(currencies[2].sparklineData)"
+              [attr.stroke]="currencies[2].color"
+              stroke-width="2"
+              fill="none"
+            />GNF
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Remaining currencies -->
+    <div class="currency-card card-simple" *ngFor="let currency of currencies.slice(3)">
+      <div class="card-header">
+        <div class="currency-info">
+          <span class="currency-flag large">{{ currency.flag }}</span>
+          <div class="currency-details">
+            <span class="currency-code">{{ currency.code }}</span>
+            <span class="currency-name">{{ currency.name }}</span>
+          </div>
+        </div>
+        <div class="rate-info">
+          <span class="rate-value">{{ formatNumber(currency.rate) }}</span>
+          <div class="change-badge" [ngClass]="'trend-' + currency.trend">
+            <i [class]="currency.trend === 'up' ? 'pi pi-arrow-up' : currency.trend === 'down' ? 'pi pi-arrow-down' : 'pi pi-minus'"></i>
+            <span>{{ getPercentChange(currency) | number:'1.1-1' }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-bar">
+        <div class="progress-fill" 
+             [style.width.%]="Math.abs(getPercentChange(currency)) * 10"
+             [style.background-color]="currency.color">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Info Notice -->
+  <div class="info-notice">
+    <i class="pi pi-info-circle"></i>
+    <p>Les taux de change sont indicatifs et mis à jour toutes les 30 secondes</p>
+  </div>
+</div>

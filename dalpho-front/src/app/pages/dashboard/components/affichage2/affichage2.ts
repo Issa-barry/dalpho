@@ -1,16 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface Currency {
+import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
+import { ExchangeRate } from '@/pages/models/ExchangeRate';
+
+type Trend = 'up' | 'down' | 'flat';
+
+interface CurrencyCard {
   code: string;
+  label: string;
   name: string;
-  symbol: string;
-  flag: string;
+  pair: string;
   rate: number;
-  change: number;
-  trend: 'up' | 'down' | 'stable';
-  sparklineData: number[];
+  changeAbs: number;
+  changePct: number;
+  trend: Trend;
   color: string;
+  lastUpdate: Date;
+  baseAmount: number;
+  baseEquivalent: number;
+  sparklineData: number[];
 }
 
 @Component({
@@ -18,135 +27,180 @@ interface Currency {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './affichage2.html',
-  styleUrl: './affichage2.scss'
+  styleUrl: './affichage2.scss',
 })
-export class Affichage2Component implements OnInit {
-  // ✅ Ajoutez cette ligne pour accéder à Math dans le template
+export class Affichage2Component implements OnInit, OnDestroy {
   Math = Math;
-  
-  lastUpdate: Date = new Date();
-  loading: boolean = false;
 
-  currencies: Currency[] = [
-    {
-      code: 'EUR',
-      name: 'Euro',
-      symbol: '€',
-      flag: '🇪🇺',
-      rate: 10700.00,
-      change: 120.50,
-      trend: 'up',
-      sparklineData: [10500, 10550, 10600, 10650, 10620, 10680, 10700],
-      color: '#10b981'
-    },
-    {
-      code: 'USD',
-      name: 'Dollar Américain',
-      symbol: '$',
-      flag: '🇺🇸',
-      rate: 8676.56,
-      change: -45.30,
-      trend: 'down',
-      sparklineData: [8750, 8720, 8700, 8680, 8690, 8680, 8676],
-      color: '#ef4444'
-    },
-    {
-      code: 'GBP',
-      name: 'Livre Sterling',
-      symbol: '£',
-      flag: '🇬🇧',
-      rate: 11436.00,
-      change: 89.20,
-      trend: 'up',
-      sparklineData: [11300, 11350, 11380, 11400, 11420, 11430, 11436],
-      color: '#10b981'
-    },
-    {
-      code: 'CHF',
-      name: 'Franc Suisse',
-      symbol: 'CHF',
-      flag: '🇨🇭',
-      rate: 10782.00,
-      change: 0.00,
-      trend: 'stable',
-      sparklineData: [10780, 10781, 10782, 10782, 10781, 10782, 10782],
-      color: '#6b7280'
-    },
-    {
-      code: 'XOF',
-      name: 'Franc CFA',
-      symbol: 'CFA',
-      flag: '🌍',
-      rate: 15.00,
-      change: 0.25,
-      trend: 'up',
-      sparklineData: [14.5, 14.6, 14.7, 14.8, 14.9, 14.95, 15],
-      color: '#10b981'
-    },
-    {
-      code: 'CAD',
-      name: 'Dollar Canadien',
-      symbol: 'C$',
-      flag: '🇨🇦',
-      rate: 6190.00,
-      change: -30.15,
-      trend: 'down',
-      sparklineData: [6250, 6230, 6210, 6200, 6195, 6190, 6190],
-      color: '#ef4444'
-    }
-  ];
+  loading = false;
+  lastUpdate: Date = new Date();
+  cards: CurrencyCard[] = [];
+
+  private timer?: any;
+
+  /**
+   * Mémoire des courbes par devise.
+   * - clé = code (EUR, USD, GBP…)
+   * - valeur = tableau de points déjà calculés
+   */
+  private sparklineStore = new Map<string, number[]>();
+
+  constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
-    setInterval(() => {
-      this.refreshRates();
-    }, 30000);
+    this.loadRates();
+    // refresh auto toutes les 30s
+    this.timer = setInterval(() => this.loadRates(), 30_000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  }
+
+  /** Appel API + mapping vers nos cartes */
+  private loadRates(): void {
+    this.loading = true;
+
+    this.exchangeRateService.getCurrentRates().subscribe({
+      next: (res) => {
+        const data = res.data ?? [];
+        const taux: ExchangeRate[] = data.map((d: any) => new ExchangeRate(d));
+
+        this.cards = taux
+          .filter((r) => r.to_currency?.code === 'GNF')
+          .map((r): CurrencyCard => {
+            const fromCode = r.from_currency?.code ?? 'XXX';
+            const toCode = r.to_currency?.code ?? '';
+            const pair = `${fromCode}/${toCode}`;
+
+            const changeAbs = r.change_abs ?? 0;
+            const changePct = r.change_pct ?? 0;
+
+            let trend: Trend = 'flat';
+            if (changeAbs > 0) trend = 'up';
+            else if (changeAbs < 0) trend = 'down';
+
+            const color =
+              trend === 'up'
+                ? '#10b981'
+                : trend === 'down'
+                ? '#ef4444'
+                : '#6b7280';
+
+            const rate = r.rate;
+            const baseAmount = 100;
+            const baseEquivalent = baseAmount * rate;
+
+            // 🔹 Sparkline basée sur une mémoire par devise
+            const sparklineData = this.buildSparkline(fromCode, rate);
+
+            return {
+              code: fromCode,
+              label: fromCode.substring(0, 2),
+              name: r.from_currency?.name ?? '',
+              pair,
+              rate,
+              changeAbs,
+              changePct,
+              trend,
+              color,
+              lastUpdate: r.updated_at ? new Date(r.updated_at) : new Date(),
+              baseAmount,
+              baseEquivalent,
+              sparklineData,
+            };
+          });
+
+        if (this.cards.length) {
+          this.lastUpdate = this.cards[0].lastUpdate;
+        } else {
+          this.lastUpdate = new Date();
+        }
+      },
+      error: (err) => {
+        console.error('Erreur chargement taux (affichage2)', err);
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
   }
 
   refreshRates(): void {
-    this.loading = true;
-    
-    setTimeout(() => {
-      this.currencies = this.currencies.map(currency => {
-        const newRate = currency.rate + (Math.random() - 0.5) * 100;
-        const newChange = (Math.random() - 0.5) * 200;
-        const newTrend = newChange > 0 ? 'up' : newChange < 0 ? 'down' : 'stable';
-        
-        return {
-          ...currency,
-          rate: newRate,
-          change: newChange,
-          trend: newTrend,
-          color: newTrend === 'up' ? '#10b981' : newTrend === 'down' ? '#ef4444' : '#6b7280',
-          sparklineData: [...currency.sparklineData.slice(1), newRate]
-        };
-      });
-      
-      this.lastUpdate = new Date();
-      this.loading = false;
-    }, 500);
+    this.loadRates();
   }
 
-  formatNumber(num: number): string {
+  /**
+   * Sparkline "intelligente" :
+   * - Si aucune donnée stockée pour cette devise → 8 points identiques (trait plat).
+   * - Si le taux n'a pas changé → on garde EXACTEMENT la même série (graphique figé).
+   * - Si le taux change → on décale la série et on ajoute le nouveau point.
+   */
+  private buildSparkline(code: string, rate: number): number[] {
+    const points = 8;
+    const previous = this.sparklineStore.get(code);
+
+    // 1) Jamais vu cette devise dans la session → ligne plate
+    if (!previous || previous.length === 0) {
+      const initial = Array(points).fill(rate);
+      this.sparklineStore.set(code, initial);
+      return initial;
+    }
+
+    const lastVal = previous[previous.length - 1];
+
+    // 2) Aucun changement de taux → on NE TOUCHE À RIEN
+    if (lastVal === rate) {
+      return previous;
+    }
+
+    // 3) Nouveau taux → on décale et on push la nouvelle valeur
+    let next = [...previous];
+
+    if (next.length >= points) {
+      next = next.slice(1); // on enlève le 1er
+    }
+
+    next.push(rate);
+
+    // sécurité pour garder exactement "points" valeurs
+    if (next.length > points) {
+      next = next.slice(next.length - points);
+    }
+
+    this.sparklineStore.set(code, next);
+    return next;
+  }
+
+  formatNumber(num: number, decimals = 2): string {
     return new Intl.NumberFormat('fr-GN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(num);
   }
 
-  getPercentChange(currency: Currency): number {
-    return (currency.change / currency.rate) * 100;
+  getPercentChange(card: CurrencyCard): number {
+    if (card.changePct !== 0) {
+      return card.changePct;
+    }
+    return card.rate
+      ? (card.changeAbs / (card.rate - card.changeAbs)) * 100
+      : 0;
   }
 
-  // ✅ Méthodes helper pour les calculs dans le template
+  /* ===== Helpers sparkline (SVG) ===== */
+
   getSparklinePoints(data: number[]): string {
     const min = Math.min(...data);
     const max = Math.max(...data);
     const range = max - min || 1;
-    
+
     return data
       .map((val, i) => {
         const x = (i * (100 / (data.length - 1)));
-        const y = 30 - ((val - min) / range * 25);
+        const y = 30 - ((val - min) / range) * 25;
         return `${x},${y}`;
       })
       .join(' ');
@@ -156,20 +210,15 @@ export class Affichage2Component implements OnInit {
     const min = Math.min(...data);
     const max = Math.max(...data);
     const range = max - min || 1;
-    
+
     const points = data
       .map((val, i) => {
         const x = (i * (100 / (data.length - 1)));
-        const y = 40 - ((val - min) / range * 30);
+        const y = 40 - ((val - min) / range) * 30;
         return `${x},${y}`;
       })
       .join(' ');
-    
-    return `0,40 ${points} 100,40`;
-  }
 
-  getBarHeight(val: number, data: number[]): number {
-    const max = Math.max(...data);
-    return (val / max) * 100;
+    return `0,40 ${points} 100,40`;
   }
 }
