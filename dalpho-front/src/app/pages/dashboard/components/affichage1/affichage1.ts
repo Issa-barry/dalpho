@@ -36,12 +36,15 @@ export class Affichage1Component implements OnInit, OnDestroy {
   rows: RateRow[] = [];
   loading = false;
 
-  private timer?: any; // tu peux le supprimer si tu es sûr de ne pas l’utiliser
+  private timer?: any;
 
   constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
     this.loadRates();
+
+    // 🔁 actualisation auto toutes les 30 secondes (comme affichage2)
+    this.timer = setInterval(() => this.loadRates(), 30_000);
   }
 
   ngOnDestroy(): void {
@@ -50,7 +53,7 @@ export class Affichage1Component implements OnInit, OnDestroy {
     }
   }
 
-  /** Charge les taux depuis la BDD et les mappe vers les lignes du tableau */
+  /** Appel API + mapping tableau */
   private loadRates(): void {
     this.loading = true;
 
@@ -58,10 +61,8 @@ export class Affichage1Component implements OnInit, OnDestroy {
       next: (res) => {
         const data = res.data ?? [];
 
-        // modèles ExchangeRate
         this.taux = data.map((item: any) => new ExchangeRate(item));
 
-        // mapping pour le tableau
         this.rows = this.taux
           .filter(r => !!r.from_currency?.code && !!r.to_currency?.code)
           .map((r): RateRow => {
@@ -72,11 +73,10 @@ export class Affichage1Component implements OnInit, OnDestroy {
             const high = r.day_high ?? r.high ?? r.rate;
             const low  = r.day_low  ?? r.low  ?? r.rate;
 
-            const open = r.rate; // si tu ajoutes "open" côté back tu pourras le remplacer
+            const open = r.rate;
 
             const changeAbs = r.change_abs ?? 0;
             const changePct = r.change_pct ?? 0;
-
             const dir: RateDirection = r.direction ?? 'flat';
 
             return {
@@ -97,7 +97,7 @@ export class Affichage1Component implements OnInit, OnDestroy {
         console.log('rows BDD: ', this.rows);
       },
       error: (err) => {
-        console.error('Erreur chargement taux', err);
+        console.error('Erreur chargement taux (affichage1)', err);
       },
       complete: () => {
         this.loading = false;
@@ -110,5 +110,10 @@ export class Affichage1Component implements OnInit, OnDestroy {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     });
+  }
+
+  // optionnel : bouton "Actualiser"
+  refreshRates(): void {
+    this.loadRates();
   }
 }

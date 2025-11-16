@@ -19,8 +19,6 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Product, ProductService } from '../service/product.service';
-import { ExchangeRate } from '../models/ExchangeRate';
-import { ExchangeRateService } from '../service/rate/echange-rate';
 
 interface Column {
     field: string;
@@ -34,12 +32,11 @@ interface ExportColumn {
 }
 
 @Component({
-  selector: 'app-gestion',
-  standalone: true,
-  templateUrl: './gestion.html',
-  styleUrl: './gestion.scss',
-  providers: [MessageService, ProductService, ConfirmationService],
-   imports: [
+  selector: 'app-contact',
+  templateUrl: './contact.html',
+  styleUrl: './contact.scss',
+   standalone: true,
+    imports: [
         CommonModule,
         TableModule,
         FormsModule,
@@ -57,15 +54,13 @@ interface ExportColumn {
         TagModule,
         InputIconModule,
         IconFieldModule,
-        ConfirmDialogModule,
-        ToastModule
+        ConfirmDialogModule
     ],
+  providers: [MessageService, ProductService, ConfirmationService]
+
 })
-// class et interfaces 
-
-
-export class Gestion implements OnInit {
-    rateDialog: boolean = false;
+export class Contact implements OnInit {
+    productDialog: boolean = false;
 
     products = signal<Product[]>([]);
 
@@ -83,17 +78,10 @@ export class Gestion implements OnInit {
 
     cols!: Column[];
 
-
-    // IBA
-     taux: ExchangeRate[] = [];
-     rate: ExchangeRate = new ExchangeRate();
-     loading = false;
-
     constructor(
         private productService: ProductService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService,
-        private exchangeRateService: ExchangeRateService
+        private confirmationService: ConfirmationService
     ) {}
 
     exportCSV() {
@@ -102,28 +90,7 @@ export class Gestion implements OnInit {
 
     ngOnInit() {
         this.loadDemoData();
-         this.loadRates();
     }
-
-    
-  private loadRates(): void {
-    this.loading = true;
-    this.exchangeRateService.getCurrentRates().subscribe({
-      next: (res) => {
-         const data = res.data ?? [];
-         this.taux = data.map((item: any) => new ExchangeRate(item));
-         
-         console.log("taux", this.taux);
-         this.loading = false;
-      },
-      error: (err) => {
-            this.loading = false;
-        },
-        complete: () => {
-        this.loading = false;
-        }
-    });
-  }
 
     loadDemoData() {
         this.productService.getProducts().then((data) => {
@@ -131,13 +98,13 @@ export class Gestion implements OnInit {
         });
 
         this.statuses = [
-            { label: 'ACTIVE', value: 'instock' },
+            { label: 'INSTOCK', value: 'instock' },
             { label: 'LOWSTOCK', value: 'lowstock' },
             { label: 'OUTOFSTOCK', value: 'outofstock' }
         ];
 
         this.cols = [
-            { field: 'devise', header: 'Code', customExportHeader: 'Product Code' },
+            { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
             { field: 'name', header: 'Name' },
             { field: 'image', header: 'Image' },
             { field: 'price', header: 'Price' },
@@ -154,12 +121,12 @@ export class Gestion implements OnInit {
     openNew() {
         this.product = {};
         this.submitted = false;
-        this.rateDialog = true;
+        this.productDialog = true;
     }
 
-    editProduct(rate: ExchangeRate) {
-         this.rate = new ExchangeRate(rate);
-        this.rateDialog = true;
+    editProduct(product: Product) {
+        this.product = { ...product };
+        this.productDialog = true;
     }
 
     deleteSelectedProducts() {
@@ -181,7 +148,7 @@ export class Gestion implements OnInit {
     }
 
     hideDialog() {
-        this.rateDialog = false;
+        this.productDialog = false;
         this.submitted = false;
     }
 
@@ -240,55 +207,30 @@ export class Gestion implements OnInit {
     saveProduct() {
         this.submitted = true;
         let _products = this.products();
+        if (this.product.name?.trim()) {
+            if (this.product.id) {
+                _products[this.findIndexById(this.product.id)] = this.product;
+                this.products.set([..._products]);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Product Updated',
+                    life: 3000
+                });
+            } else {
+                this.product.id = this.createId();
+                this.product.image = 'product-placeholder.svg';
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: 'Product Created',
+                    life: 3000
+                });
+                this.products.set([..._products, this.product]);
+            }
 
-        console.log(this.rate.id, this.rate.rate);
-
-        this.exchangeRateService.updateRate(this.rate.id!, this.rate.rate).subscribe({
-          next: (res) => {
-            this.messageService.add({   
-                severity: 'success',
-                summary: '👉  Succès',
-                detail: 'Taux mis à jour',
-                life: 3000
-            });
-            this.hideDialog();
-            this.loadRates();
-          },
-          error: (err) => {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Échec de la mise à jour du taux',
-                life: 3000
-            });
-          }
-        });
-        
-
-        // if (this.product.name?.trim()) {
-        //     if (this.product.id) {
-        //         _products[this.findIndexById(this.product.id)] = this.product;
-        //         this.products.set([..._products]);
-        //         this.messageService.add({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Updated',
-        //             life: 3000
-        //         });
-        //     } else {
-        //         this.product.id = this.createId();
-        //         this.product.image = 'product-placeholder.svg';
-        //         this.messageService.add({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Created',
-        //             life: 3000
-        //         });
-        //         this.products.set([..._products, this.product]);
-        //     }
-
-        //     this.rateDialog = false;
-        //     this.product = {};
-        // }
+            this.productDialog = false;
+            this.product = {};
+        }
     }
 }

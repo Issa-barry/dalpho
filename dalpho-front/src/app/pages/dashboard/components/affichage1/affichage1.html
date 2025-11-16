@@ -45,9 +45,6 @@
                 : fmt(r.last, 4)
             }}
           </span>
-          <span class="delta" *ngIf="r.changePct !== 0">
-            ({{ r.changePct > 0 ? '+' : '' }}{{ fmt(r.changePct, 2) }} %)
-          </span>
         </td>
 
         <td class="time">

@@ -21,8 +21,8 @@ export class ExchangeRate {
   updated_at?: string;
 
   // Relations
-  from_currency?: Currency;
-  to_currency?: Currency;
+  from_currency: Currency = new Currency();
+  to_currency: Currency = new Currency();
   agent?: Agent;
 
   // High / Low (jour ou génériques)
