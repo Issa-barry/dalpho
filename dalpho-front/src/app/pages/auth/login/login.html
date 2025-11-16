@@ -28,9 +28,9 @@
                             <div *ngIf="errorMessage" class="text-red-500 mt-3 text-center mb-8">{{ errorMessage }}</div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
-                            <small *ngIf="errors['email']" class="text-red-500 mt-1">{{ errors['email'] }}</small>
+                            <label for="phone1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Phone</label>
+                            <input pInputText id="phone1" type="text" placeholder="Phone address" class="w-full md:w-120 mb-8" [(ngModel)]="phone" />
+                            <small *ngIf="errors['phone']" class="text-red-500 mt-1">{{ errors['phone'] }}</small>
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Mot de passe</label>
                             <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
@@ -44,7 +44,7 @@
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié?</span>
                             </div>
 
-                             <p-button label="Me connecter" styleClass="w-full" (click)="login()" [loading]="submited" [disabled]="!email || !password"></p-button>
+                             <p-button label="Me connecter" styleClass="w-full" (click)="login()" [loading]="submited" [disabled]="!phone || !password"></p-button>
                         </div>
                     </div>
                 </div>

@@ -58,7 +58,8 @@ interface ExportColumn {
         InputIconModule,
         IconFieldModule,
         ConfirmDialogModule,
-        ToastModule
+        ToastModule,
+          
     ],
 })
 // class et interfaces 

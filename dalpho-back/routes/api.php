@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
 
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
 use App\Http\Controllers\Api\StaffRegisterController;
+use App\Http\Controllers\Settings\ProfileController;
 
 // EXCHANGE RATE CONTROLLEURS SÉPARÉS
  
@@ -36,6 +37,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Staff : agent, manager, admin
     Route::post('/staff', [StaffRegisterController::class, 'store']); 
+
+    Route::get('/me', [ProfileController::class, 'me']);
 });
 
 

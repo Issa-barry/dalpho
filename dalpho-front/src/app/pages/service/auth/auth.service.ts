@@ -118,7 +118,7 @@ export class AuthService {
   };
 
   /** LOGIN STATELESS */
-login(credentials: { email: string; password: string }): Observable<LoginResponse> {
+login(credentials: { phone: string; password: string }): Observable<LoginResponse> {
   return this.http
     .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials)
     .pipe(

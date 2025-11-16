@@ -93,8 +93,30 @@
         <p-dialog [(visible)]="rateDialog" [style]="{ width: '450px' }" header="Modifier le taux" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
-                    <!-- <img [src]="'https://primefaces.org/cdn/primeng/images/demo/product/' + product.image" [alt]="product.image" class="block m-auto pb-4" *ngIf="product.image" /> -->
-                                            <label for="name" class="block font-bold mb-3">{{ rate.from_currency.name }} ({{ rate.from_currency.symbol }}) à Franc-Guinéen</label>
+                    <div>
+                        <label for="fromCurrency" class="block font-bold mb-3">
+                            Devise vers Franc Guinéen (GNF)
+                        </label>
+
+                        <p-select
+                            [(ngModel)]="rate.from_currency"
+                            inputId="fromCurrency"
+                            [options]="[
+                                { label: 'Euro (EUR)', value: 'EUR' },
+                                { label: 'Dollar US (USD)', value: 'USD' },
+                                { label: 'Franc CFA (XOF)', value: 'XOF' },
+                                { label: 'Livre Sterling (GBP)', value: 'GBP' }
+                            ]"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Sélectionner une devise"
+                            fluid
+                        ></p-select>
+
+                        <small class="text-red-500" *ngIf="submitted && !rate.from_currency">
+                            La devise est obligatoire.
+                        </small>
+                    </div>
                     <div>
                         <label for="rate" class="block font-bold mb-3">Montant en GNF  </label>
                         <input type="text" pInputText id="rate" [(ngModel)]="rate.rate" required autofocus fluid />

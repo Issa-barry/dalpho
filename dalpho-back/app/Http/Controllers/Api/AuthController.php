@@ -7,35 +7,55 @@ use App\Models\User;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class AuthController extends Controller
 {
     use JsonResponseTrait;
 
+    /**
+     * Connexion via numéro de téléphone + mot de passe
+     */
     public function login(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'email'    => 'required|email',
-                'password' => 'required',
+            // Validation manuelle
+            $validator = Validator::make($request->all(), [
+                'phone'    => ['required', 'string'],
+                'password' => ['required', 'string'],
             ]);
 
-            $user = User::where('email', $validated['email'])->first();
+            if ($validator->fails()) {
+                return $this->validationErrorResponse(
+                    'Les données fournies sont invalides',
+                    $validator->errors()->toArray()   // 👈 ICI le toArray()
+                );
+            }
 
+            $validated = $validator->validated();
+
+            // Recherche utilisateur par téléphone
+            $user = User::where('phone', $validated['phone'])->first();
+
+            // Vérification du mot de passe
             if (! $user || ! Hash::check($validated['password'], $user->password)) {
                 return $this->unauthorizedResponse('Identifiants invalides');
             }
 
-            // Token simple (nom générique)
+            // Création du token d'accès
             $token = $user->createToken('api-token')->plainTextToken;
 
             return $this->successResponse('Connexion réussie', [
                 'access_token' => $token,
                 'user' => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
+                    'id'     => $user->id,
+                    'prenom' => $user->prenom,
+                    'nom'    => $user->nom,
+                    'role'   => $user->role,
+                    'phone'  => $user->phone,
+                    'email'  => $user->email,
+                    'statut' => $user->statut,
                 ]
             ]);
         } catch (Throwable $e) {

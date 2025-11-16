@@ -18,7 +18,7 @@ import { RippleModule } from 'primeng/ripple';
   styleUrl: './login.scss'
 })
 export class Login {
-     email: string = '';
+     phone: string = '';
     password: string = '';
     checked: boolean = false;
     submited: boolean = false;
@@ -34,11 +34,11 @@ export class Login {
 
     login(): void {
        this.errorMessage = '';
-        const email = (this.email || '').trim();
+        const phone = (this.phone || '').trim();
         const password = (this.password || '').trim();
         this.submited = true; 
 
-        this.authService.login({email,password}).subscribe({
+        this.authService.login({phone,password}).subscribe({
             next: () => {
                 this.submited = false;
                 this.router.navigateByUrl('/dashboard');
