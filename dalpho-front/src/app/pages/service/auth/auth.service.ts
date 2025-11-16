@@ -120,7 +120,7 @@ export class AuthService {
   /** LOGIN STATELESS */
 login(credentials: { email: string; password: string }): Observable<LoginResponse> {
   return this.http
-    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
+    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials)
     .pipe(
       map(res => {
         if (!res.data?.access_token) {

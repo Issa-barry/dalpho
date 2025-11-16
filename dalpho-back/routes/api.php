@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClientRegisterController;
 use App\Http\Controllers\Api\CurrencyController;
 
 // Nouveaux contrôleurs ExchangeRate
@@ -13,7 +14,7 @@ use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
 
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
-
+use App\Http\Controllers\Api\StaffRegisterController;
 
 // EXCHANGE RATE CONTROLLEURS SÉPARÉS
  
@@ -24,9 +25,19 @@ use App\Http\Controllers\Api\ExchangeRateHistoryController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/login', [AuthController::class, 'login']);
+
+ 
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Clients
+    Route::post('/clients', [ClientRegisterController::class, 'store']);
+
+    // Staff : agent, manager, admin
+    Route::post('/staff', [StaffRegisterController::class, 'store']); 
 });
+
 
 Route::prefix('public')->group(function () {
 
