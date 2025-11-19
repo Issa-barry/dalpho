@@ -8,13 +8,13 @@
     .page-title {
       font-size: 2rem;
       font-weight: 700;
-      color: white;
+      color: var(--text-color); // ✅ Adaptatif
       margin: 0 0 0.25rem 0;
     }
 
     .page-subtitle {
       font-size: 0.875rem;
-      color: #64748b;
+      color: var(--text-color-secondary); // ✅ Adaptatif
       margin: 0;
       font-weight: 500;
     }
@@ -34,7 +34,8 @@
 
     // Currency Card Base
     .currency-card {
-      background: #1e293b;
+      background: var(--surface-card); // ✅ Adaptatif
+      border: 1px solid var(--surface-border); // ✅ Ajout bordure adaptative
       border-radius: 24px;
       padding: 1.5rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -61,14 +62,14 @@
           .currency-code {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--text-color-secondary); // ✅ Adaptatif
             letter-spacing: 0.5px;
           }
         }
 
         .time {
           font-size: 0.75rem;
-          color: #64748b;
+          color: var(--text-color-secondary); // ✅ Adaptatif
           font-weight: 500;
         }
       }
@@ -76,14 +77,14 @@
       .card-body {
         .card-subline {
           font-size: 0.875rem;
-          color: #64748b;
+          color: var(--text-color-secondary); // ✅ Adaptatif
           margin: 0 0 0.5rem 0;
         }
 
         .overview-value {
           font-size: 2rem;
           font-weight: 700;
-          color: white;
+          color: var(--text-color); // ✅ Adaptatif
           margin: 0 0 0.5rem 0;
         }
 
@@ -108,7 +109,7 @@
           }
 
           .period {
-            color: #64748b;
+            color: var(--text-color-secondary); // ✅ Adaptatif
           }
         }
 

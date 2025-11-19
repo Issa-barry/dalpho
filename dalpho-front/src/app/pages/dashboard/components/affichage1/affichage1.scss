@@ -8,6 +8,13 @@
       padding: 0.45rem 0.65rem !important;
       vertical-align: middle;
       font-size: 0.92rem;
+      color: var(--text-color); // ✅ Adaptatif
+    }
+
+    /* En-têtes de tableau */
+    :where(.p-datatable-thead > tr > th) {
+      color: var(--text-color); // ✅ Adaptatif
+      background: var(--surface-card); // ✅ Adaptatif
     }
 
     /* Réduction espace entre colonnes Pair et Actuellement */
@@ -28,6 +35,7 @@
 
       .sym {
         font-weight: 500;
+        color: var(--text-color); // ✅ Adaptatif
       }
 
       .dir-tag {
@@ -58,11 +66,12 @@
     .time {
       white-space: nowrap;
       opacity: 0.7;
+      color: var(--text-color-secondary); // ✅ Adaptatif
     }
 
     /* Hover */
     :where(.p-datatable-tbody > tr:hover) {
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--surface-hover); // ✅ Adaptatif
       transition: background 0.15s ease;
     }
   }
