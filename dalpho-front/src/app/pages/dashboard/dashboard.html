@@ -1,30 +1,22 @@
+<div class="grid grid-cols-12 gap-4">  <!-- gap-6 → gap-4 -->
+  <h1 class="col-span-12 mb-1">Marché des changes — Guinéen</h1>
+  <span class="col-span-12 text-gray-400 mb-3">Taux actuels · EN · GNF</span>
 
-<div class="grid grid-cols-12 gap-8">
-           <h1 class="col-span-12">Marché des changes — Guinéen</h1>
-          <span class="col-span-12 text-gray-400">Taux actuels · EN · GNF</span>
+  <div class="col-span-12 xl:col-span-12 mb-4">
+    <app-affichage1 />
+  </div> 
 
-            <div class="col-span-12 xl:col-span-12">
-                 <app-affichage1 />
-            </div> 
-
-              <!-- <div class="col-span-12 xl:col-span-6">
-                 <app-best-selling-widget />
-            </div>  -->
-
-
-            <div class="col-span-12 xl:col-span-12">
-                 <app-affichage2 />
-            </div> 
-
-           <!-- <div class="col-span-12 xl:col-span-12">
-                 <app-affichage3 />
-            </div>  -->
-
-            <!-- <div class="col-span-12 xl:col-span-12">
-                 <app-affichage4 />
-            </div>  -->
-            <!-- <div class="col-span-12 xl:col-span-6">
-                 <app-change />
-            </div>  --> 
-           
-    </div>
+  <div class="col-span-12 xl:col-span-12 mb-4">
+    <app-affichage2 />
+  </div> 
+  
+  <div class="col-span-12 xl:col-span-8 mb-4">
+    <app-best-selling-widget />
+  </div> 
+  
+  <!-- Info -->
+  <div class="info-notice col-span-12">
+    <i class="pi pi-info-circle"></i>
+    <p>Les taux de change sont indicatifs et mis à jour toutes les 30&nbsp;secondes.</p>
+  </div>
+</div>
