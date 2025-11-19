@@ -1,5 +1,5 @@
 // src/app/pages/components/affichage1/affichage1.component.ts
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -31,30 +31,23 @@ interface RateRow {
   templateUrl: './affichage1.html',
   styleUrl: './affichage1.scss',
 })
-export class Affichage1Component implements OnInit, OnDestroy {
+export class Affichage1Component implements OnInit {
   taux: ExchangeRate[] = [];
   rows: RateRow[] = [];
   loading = false;
 
-  private timer?: any;
-
   constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
+    // Chargement initial uniquement
     this.loadRates();
-
-    // 🔁 actualisation auto toutes les 30 secondes (comme affichage2)
-    this.timer = setInterval(() => this.loadRates(), 30_000);
   }
 
-  ngOnDestroy(): void {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-  }
-
-  /** Appel API + mapping tableau */
-  private loadRates(): void {
+  /** 
+   * Méthode publique appelée par le composant parent (Dashboard)
+   * pour charger/actualiser les taux
+   */
+  loadRates(): void {
     this.loading = true;
 
     this.exchangeRateService.getCurrentRates().subscribe({
@@ -105,6 +98,9 @@ export class Affichage1Component implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Formattage des nombres avec séparateurs
+   */
   fmt(n: number, decimals = 2): string {
     return n.toLocaleString(undefined, {
       minimumFractionDigits: decimals,
@@ -112,7 +108,10 @@ export class Affichage1Component implements OnInit, OnDestroy {
     });
   }
 
-  // optionnel : bouton "Actualiser"
+  /**
+   * Méthode publique pour refresh manuel
+   * Appelée par le bouton local ou par le Dashboard
+   */
   refreshRates(): void {
     this.loadRates();
   }

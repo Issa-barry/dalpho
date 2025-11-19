@@ -1,72 +1,30 @@
 .affichage2-container {
-   // background: #f8f9fa;
-   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
 
-  // Page Header
+  // Page Header (simplifié)
   .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    margin-bottom: 1rem;
 
-    .header-left {
-      .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        // color: #1e293b;
-        color: white;
-        // margin: 0 0 0.25rem 0;
-      }
-
-      .page-subtitle {
-        font-size: 0.875rem;
-        color: #64748b;
-        margin: 0;
-        font-weight: 500;
-      }
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 0.25rem 0;
     }
 
-    .refresh-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      background: #0ea5e9;
-      color: white;
-      border: none;
-      border-radius: 10px;
+    .page-subtitle {
       font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-
-      &:hover:not(:disabled) {
-        background: #0284c7;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3);
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .pi-refresh.spinning {
-        animation: spin 1s linear infinite;
-      }
+      color: #64748b;
+      margin: 0;
+      font-weight: 500;
     }
   }
 
   // Currency Grid
   .currency-grid {
-    // max-width: 1200px;
-    // margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 2rem;
     transition: opacity 0.3s ease;
 
     &.loading {
@@ -106,30 +64,6 @@
             color: #94a3b8;
             letter-spacing: 0.5px;
           }
-
-          .currency-flag {
-            font-size: 1.5rem;
-
-            &.large {
-              font-size: 2.5rem;
-            }
-          }
-
-          .currency-details {
-            display: flex;
-            flex-direction: column;
-
-            .currency-code {
-              font-size: 1rem;
-              color: white;
-              margin-bottom: 0.15rem;
-            }
-
-            .currency-name {
-              font-size: 0.75rem;
-              color: #64748b;
-            }
-          }
         }
 
         .time {
@@ -140,271 +74,61 @@
       }
 
       .card-body {
-        .card-label {
-          font-size: 0.75rem;
+        .card-subline {
+          font-size: 0.875rem;
           color: #64748b;
           margin: 0 0 0.5rem 0;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
         }
 
-        .rate-section {
-          margin-bottom: 1rem;
-
-          .rate-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: white;
-            margin: 0 0 0.5rem 0;
-            letter-spacing: -1px;
-          }
-
-          .change-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-
-            &.trend-up {
-              background: rgba(16, 185, 129, 0.2);
-              color: #10b981;
-            }
-
-            &.trend-down {
-              background: rgba(239, 68, 68, 0.2);
-              color: #ef4444;
-            }
-
-            &.trend-stable {
-              background: rgba(107, 114, 128, 0.2);
-              color: #6b7280;
-            }
-          }
-        }
-      }
-
-      // Progress Dots
-      .progress-dots {
-        display: flex;
-        justify-content: center;
-        gap: 0.35rem;
-        margin-top: 1rem;
-
-        .dot {
-          width: 6px;
-          height: 6px;
-          background: #334155;
-          border-radius: 50%;
-          transition: all 0.3s ease;
-
-          &.active {
-            background: white;
-            width: 18px;
-            border-radius: 3px;
-          }
-        }
-      }
-    }
-
-    // Card Watchlist Style
-    .card-watchlist {
-      .sparkline-container {
-        height: 60px;
-        margin-top: 1rem;
-
-        .sparkline {
-          width: 100%;
-          height: 100%;
-        }
-      }
-    }
-
-    // Card Volume Style
-    .card-volume {
-      .volume-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white;
-        margin: 0 0 0.5rem 0;
-
-        .unit {
-          font-size: 1rem;
-          color: #64748b;
-          font-weight: 600;
-        }
-      }
-
-      .volume-change {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-
-        &.trend-up {
-          color: #10b981;
-        }
-
-        &.trend-down {
-          color: #ef4444;
-        }
-
-        .period {
-          color: #64748b;
-        }
-      }
-
-      .bar-chart {
-        display: flex;
-        align-items: flex-end;
-        gap: 4px;
-        height: 80px;
-
-        .bar {
-          flex: 1;
-          background: #334155;
-          border-radius: 4px 4px 0 0;
-          min-height: 10%;
-          transition: all 0.3s ease;
-
-          &.positive {
-            background: #10b981;
-          }
-
-          &.negative {
-            background: #ef4444;
-          }
-        }
-      }
-    }
-
-    // Card Overview Style
-    .card-overview {
-      .overview-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white;
-        margin: 0 0 0.5rem 0;
-      }
-
-      .overview-change {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-
-        &.trend-up {
-          color: #10b981;
-        }
-
-        &.trend-down {
-          color: #ef4444;
-        }
-
-        .period {
-          color: #64748b;
-        }
-      }
-
-      .area-chart {
-        height: 80px;
-
-        svg {
-          width: 100%;
-          height: 100%;
-        }
-      }
-    }
-
-    // Card Simple Style
-    .card-simple {
-      .rate-info {
-        text-align: right;
-
-        .rate-value {
-          display: block;
-          font-size: 1.5rem;
+        .overview-value {
+          font-size: 2rem;
           font-weight: 700;
           color: white;
-          margin-bottom: 0.5rem;
+          margin: 0 0 0.5rem 0;
         }
 
-        .change-badge {
-          display: inline-flex;
+        .overview-change {
+          display: flex;
           align-items: center;
-          gap: 0.25rem;
-          padding: 0.25rem 0.6rem;
-          border-radius: 6px;
-          font-size: 0.75rem;
+          gap: 0.35rem;
+          font-size: 0.875rem;
           font-weight: 600;
+          margin-bottom: 1rem;
 
           &.trend-up {
-            background: rgba(16, 185, 129, 0.2);
             color: #10b981;
           }
 
           &.trend-down {
-            background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
           }
 
-          &.trend-stable {
-            background: rgba(107, 114, 128, 0.2);
+          &.trend-flat {
             color: #6b7280;
+          }
+
+          .period {
+            color: #64748b;
+          }
+        }
+
+        .area-chart {
+          height: 80px;
+
+          svg {
+            width: 100%;
+            height: 100%;
           }
         }
       }
-
-      .progress-bar {
-        height: 6px;
-        background: #334155;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 1rem;
-
-        .progress-fill {
-          height: 100%;
-          border-radius: 10px;
-          transition: width 0.6s ease;
-        }
-      }
-    }
-  }
-
-   
-
-  // Animations
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
     }
   }
 
   // Responsive
   @media (max-width: 768px) {
-    padding: 1rem;
-
     .page-header {
-      flex-direction: column;
-      align-items: stretch;
-
-      .header-left .page-title {
+      .page-title {
         font-size: 1.5rem;
-      }
-
-      .refresh-btn {
-        width: 100%;
-        justify-content: center;
       }
     }
 

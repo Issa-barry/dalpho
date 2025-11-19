@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+// src/app/pages/components/affichage2/affichage2.component.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
@@ -29,14 +30,12 @@ interface CurrencyCard {
   templateUrl: './affichage2.html',
   styleUrl: './affichage2.scss',
 })
-export class Affichage2Component implements OnInit, OnDestroy {
+export class Affichage2Component implements OnInit {
   Math = Math;
 
   loading = false;
   lastUpdate: Date = new Date();
   cards: CurrencyCard[] = [];
-
-  private timer?: any;
 
   /**
    * Mémoire des courbes par devise.
@@ -48,19 +47,15 @@ export class Affichage2Component implements OnInit, OnDestroy {
   constructor(private exchangeRateService: ExchangeRateService) {}
 
   ngOnInit(): void {
+    // Chargement initial uniquement
     this.loadRates();
-    // refresh auto toutes les 30s
-    this.timer = setInterval(() => this.loadRates(), 30_000);
   }
 
-  ngOnDestroy(): void {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-  }
-
-  /** Appel API + mapping vers nos cartes */
-  private loadRates(): void {
+  /**
+   * Méthode publique appelée par le composant parent (Dashboard)
+   * pour charger/actualiser les taux
+   */
+  loadRates(): void {
     this.loading = true;
 
     this.exchangeRateService.getCurrentRates().subscribe({
@@ -128,6 +123,10 @@ export class Affichage2Component implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Méthode publique pour refresh manuel
+   * Appelée par le bouton local ou par le Dashboard
+   */
   refreshRates(): void {
     this.loadRates();
   }

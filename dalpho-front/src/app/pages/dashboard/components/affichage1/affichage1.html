@@ -1,11 +1,9 @@
-<div class="fx-board container">
-  <div class="board-header">
-   </div>
-
+<div class="fx-board">
+<div class="text-gray-400 font-semibold mb-4">Affichage Liste</div>
   <p-table
     [value]="rows"
     [rowHover]="true"
-    styleClass="p-datatable-sm fx-table"
+    styleClass="p-datatable-sm fx-table "
     [tableStyle]="{ 'min-width': '760px' }"
   >
     <ng-template pTemplate="header">
@@ -24,47 +22,20 @@
           <span class="sym">{{ r.pair }}</span>
           <p-tag
             [value]="r.dir === 'up' ? '↑' : r.dir === 'down' ? '↓' : '•'"
-            [severity]="
-              r.dir === 'up'
-                ? 'success'
-                : r.dir === 'down'
-                ? 'danger'
-                : 'info'
-            "
+            [severity]="r.dir === 'up' ? 'success' : r.dir === 'down' ? 'danger' : 'info'"
             styleClass="dir-tag"
           ></p-tag>
         </td>
 
         <td [ngClass]="r.dir">
-          <span class="value">
-            1 {{ r.base }} = 
-            {{
-              (r.quote === 'GNF' || r.quote === 'XOF')
-                ? fmt(r.last, 0)
-                : fmt(r.last, 4)
-            }}
-          </span>
+          1 {{ r.base }} = {{ fmt(r.last, r.quote === 'GNF' || r.quote === 'XOF' ? 0 : 4) }}
         </td>
 
-        <td class="time">
-          {{ r.updatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}
-        </td>
+        <td class="time">{{ r.updatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
 
-        <td>
-          {{
-            (r.quote === 'GNF' || r.quote === 'XOF')
-              ? fmt(r.high, 0)
-              : fmt(r.high, 4)
-          }}
-        </td>
+        <td>{{ fmt(r.high, r.quote === 'GNF' || r.quote === 'XOF' ? 0 : 4) }}</td>
 
-        <td>
-          {{
-            (r.quote === 'GNF' || r.quote === 'XOF')
-              ? fmt(r.low, 0)
-              : fmt(r.low, 4)
-          }}
-        </td>
+        <td>{{ fmt(r.low, r.quote === 'GNF' || r.quote === 'XOF' ? 0 : 4) }}</td>
       </tr>
     </ng-template>
   </p-table>

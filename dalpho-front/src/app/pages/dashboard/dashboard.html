@@ -1,22 +1,36 @@
-<div class="grid grid-cols-12 gap-4">  <!-- gap-6 → gap-4 -->
-  <h1 class="col-span-12 mb-1">Marché des changes — Guinéen</h1>
-  <span class="col-span-12 text-gray-400 mb-3">Taux actuels · EN · GNF</span>
+<div class="grid grid-cols-12 gap-4">
+    <!-- Header avec bouton refresh global -->
+    <div class="col-span-12 flex justify-between items-center mb-2">
+        <div>
+            <h1 class="mb-1">Marché des changes — Guinéen</h1>
+         </div>
+        
+        <p-button 
+            label="Actualiser tout" 
+            icon="pi pi-refresh"
+            [raised]="true"
+            (onClick)="refreshAllRates()"
+            [disabled]="isRefreshing"
+            [styleClass]="isRefreshing ? 'refresh-loading' : ''"
+        />
+    </div>
 
-  <div class="col-span-12 xl:col-span-12 mb-4">
-    <app-affichage1 />
-  </div> 
+    <!-- Les grilles avec effet loading -->
+    <div class="col-span-12 xl:col-span-12 mb-4" [class.loading-overlay]="isRefreshing">
+        <app-affichage1 />
+    </div> 
 
-  <div class="col-span-12 xl:col-span-12 mb-4">
-    <app-affichage2 />
-  </div> 
-<!--   
-  <div class="col-span-12 xl:col-span-8 mb-4">
-    <app-best-selling-widget />
-  </div>  -->
-  
-  <!-- Info -->
-  <div class="info-notice col-span-12">
-    <i class="pi pi-info-circle"></i>
-    <p>Les taux de change sont indicatifs et mis à jour toutes les 30&nbsp;secondes.</p>
-  </div>
+    <div class="col-span-12 xl:col-span-12 mb-4" [class.loading-overlay]="isRefreshing">
+        <app-affichage2 />
+    </div> 
+    
+    <div class="col-span-12 xl:col-span-8 mb-4">
+        <app-best-selling-widget />
+    </div> 
+    
+    <!-- Info -->
+    <div class="info-notice col-span-12">
+        <i class="pi pi-info-circle"></i>
+        <p>Les taux de change sont indicatifs et mis à jour automatiquement toutes les 30&nbsp;secondes.</p>
+    </div>
 </div>

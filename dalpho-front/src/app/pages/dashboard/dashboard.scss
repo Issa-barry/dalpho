@@ -1,24 +1,67 @@
+// dashboard.scss
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+// Style pour le bouton en chargement
+::ng-deep .refresh-loading {
+  .pi-refresh {
+    animation: spin 1s linear infinite;
+  }
+}
+
+// Animation de rotation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Effet d'opacité réduite pendant le chargement
+.loading-overlay {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
 // Info Notice
-  .info-notice {
-    // max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
+.info-notice {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 
-    .pi-info-circle {
-      color: #0ea5e9;
-      font-size: 1.25rem;
-    }
+  .pi-info-circle {
+    color: #0ea5e9;
+    font-size: 1.25rem;
+  }
 
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      color: #64748b;
-      font-weight: 500;
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  ::ng-deep p-button {
+    width: 100%;
+    
+    button {
+      width: 100%;
     }
   }
+}
