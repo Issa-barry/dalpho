@@ -8,6 +8,7 @@ import { Login } from '@/pages/auth/login/login';
 import { authGuard } from '@/guards/auth.guard';
 import { Gestion } from '@/pages/gestion/gestion';
 import { Contact } from '@/pages/contact/contact';
+import { RoleGuard } from '@/guards/role.guard';
 
 export const appRoutes: Routes = [
     {
@@ -15,7 +16,12 @@ export const appRoutes: Routes = [
         component: AppLayout,
          children: [
             { path: '', component: Dashboard },
-            { path: 'gestion', component: Gestion },
+            { 
+                path: 'gestion', component: Gestion,
+                canActivate: [RoleGuard],
+                data: { roles: ['agent','agent', 'manager', 'admin'] }
+
+            },
             { path: 'contact', component: Contact },
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
             { path: 'documentation', component: Documentation },

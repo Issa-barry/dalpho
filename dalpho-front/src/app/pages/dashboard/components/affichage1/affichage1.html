@@ -1,8 +1,6 @@
-<div class="fx-board">
+<div class="fx-board container">
   <div class="board-header">
-    <h3>Marché des changes — Guinée</h3>
-    <span class="muted">Taux actuels · MID · Données BDD</span>
-  </div>
+   </div>
 
   <p-table
     [value]="rows"
@@ -12,7 +10,7 @@
   >
     <ng-template pTemplate="header">
       <tr>
-        <th>Pair</th>
+        <th>Devise</th>
         <th>Actuellement en GNF</th>
         <th>Dernière mise à jour</th>
         <th>+ Haut</th>
@@ -39,6 +37,7 @@
 
         <td [ngClass]="r.dir">
           <span class="value">
+            1 {{ r.base }} = 
             {{
               (r.quote === 'GNF' || r.quote === 'XOF')
                 ? fmt(r.last, 0)

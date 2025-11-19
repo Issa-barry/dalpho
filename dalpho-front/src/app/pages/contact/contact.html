@@ -77,8 +77,12 @@
         <p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }" header="Product Details" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-6">
-                    <!-- <img [src]="'https://primefaces.org/cdn/primeng/images/demo/product/' + product.image" [alt]="product.image" class="block m-auto pb-4" *ngIf="product.image" /> -->
+                    
                     <div>
+                        <label for="inventoryStatus" class="block font-bold mb-3">Role</label>
+                        <p-select [(ngModel)]="product.inventoryStatus" inputId="inventoryStatus" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Select a Status" fluid />
+                    </div>
+                     <div>
                         <label for="name" class="block font-bold mb-3">Nom</label>
                         <input type="text" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
                         <small class="text-red-500" *ngIf="submitted && !product.name">Nom est obligatoire.</small>
@@ -93,11 +97,6 @@
                         <input type="text" pInputText id="name" [(ngModel)]="product.name" required autofocus fluid />
                         <small class="text-red-500" *ngIf="submitted && !product.name">Prenom est obligatoire.</small>
                     </div> 
-
-                    <div>
-                        <label for="inventoryStatus" class="block font-bold mb-3">Role</label>
-                        <p-select [(ngModel)]="product.inventoryStatus" inputId="inventoryStatus" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Select a Status" fluid />
-                    </div>
 
                     <div>
                         <span class="block font-bold mb-4">Type de piéce d'identité</span>

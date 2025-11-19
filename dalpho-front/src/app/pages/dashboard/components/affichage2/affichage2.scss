@@ -1,12 +1,12 @@
 .affichage2-container {
-  padding: 2rem;
+  // padding: 2rem;
   // background: #f8f9fa;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
 
   // Page Header
   .page-header {
-    max-width: 1200px;
+    // max-width: 1200px;
     margin: 0 auto 2rem;
     display: flex;
     justify-content: space-between;
@@ -20,7 +20,7 @@
         font-weight: 700;
         // color: #1e293b;
         color: white;
-        margin: 0 0 0.25rem 0;
+        // margin: 0 0 0.25rem 0;
       }
 
       .page-subtitle {
@@ -65,7 +65,7 @@
 
   // Currency Grid
   .currency-grid {
-    max-width: 1200px;
+    // max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -384,7 +384,7 @@
 
   // Info Notice
   .info-notice {
-    max-width: 1200px;
+    // max-width: 1200px;
     margin: 0 auto;
     display: flex;
     align-items: center;

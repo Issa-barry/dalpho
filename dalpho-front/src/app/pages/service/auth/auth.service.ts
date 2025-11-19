@@ -4,23 +4,22 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from 'src/environements/environment.dev';
 import { Router } from '@angular/router';
- import { Contact } from '@/pages/models/contact';
+import { Contact } from '@/pages/models/contact';
 import { TokenService } from '../token/token.service';
- 
 
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T | null;
 }
- 
+
 export interface LoginResponse {
   user: Contact;
   access_token: string;
   token_type: string;
   expires_in: number;
   expires_at: string;
-} 
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -29,7 +28,7 @@ export class AuthService {
   private readonly STORAGE_USER_ID = 'user_id';
   private readonly LEGACY_KEYS = ['user', 'auth_user', 'auth', 'token', 'access_token'];
 
-  // On n'hydrate pas ici pour éviter JSON.parse au démarrage
+  // User courant (observable)
   private currentUserSubject = new BehaviorSubject<Contact | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -66,6 +65,7 @@ export class AuthService {
     }
   }
 
+  /** User courant (valeur synchrone) */
   public get currentUserValue(): Contact | null {
     return this.currentUserSubject.value;
   }
@@ -92,10 +92,10 @@ export class AuthService {
     } finally {
       localStorage.removeItem(this.STORAGE_USER);
       localStorage.removeItem(this.STORAGE_USER_ID);
-      // Nettoyage des anciennes clés si elles ont été utilisées par le passé
       this.LEGACY_KEYS.forEach(k => localStorage.removeItem(k));
       this.currentUserSubject.next(null);
     }
+
     if (!keepRoute) {
       this.router.navigate(['/auth/login']);
     }
@@ -105,12 +105,7 @@ export class AuthService {
   private handleError = (error: HttpErrorResponse) => {
     console.error('HTTP Error:', error);
 
-    // Messages (si tu les utilises ailleurs, expose-les depuis ici)
-    // let msg = 'Une erreur inconnue est survenue';
-
-    if (error.status === 401) {
-      this.clearAuthData();
-    } else if (error.status === 419) {
+    if (error.status === 401 || error.status === 419) {
       this.clearAuthData();
     }
 
@@ -118,32 +113,29 @@ export class AuthService {
   };
 
   /** LOGIN STATELESS */
-login(credentials: { phone: string; password: string }): Observable<LoginResponse> {
-  return this.http
-    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials)
-    .pipe(
-      map(res => {
-        if (!res.data?.access_token) {
-          throw new Error('Réponse invalide du serveur (access_token manquant)');
-        }
-        return res.data;
-      }),
-      tap(data => {
-        // ⬇️ durée de vie du token en secondes (ex : 24h)
-        const expiresInSeconds = data.expires_in ?? 60 * 60 * 24;
-        this.setAuthData(data.access_token, data.user, expiresInSeconds);
-      }),
-      catchError(this.handleError)
-    );
-}
-
+  login(credentials: { phone: string; password: string }): Observable<LoginResponse> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials)
+      .pipe(
+        map(res => {
+          if (!res.data?.access_token) {
+            throw new Error('Réponse invalide du serveur (access_token manquant)');
+          }
+          return res.data;
+        }),
+        tap(data => {
+          const expiresInSeconds = data.expires_in ?? 60 * 60 * 24; // 24h par défaut
+          this.setAuthData(data.access_token, data.user, expiresInSeconds);
+        }),
+        catchError(this.handleError)
+      );
+  }
 
   /** LOGOUT */
   logout(): Observable<any> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => this.clearAuthData()),
       catchError(err => {
-        // Même en cas d'erreur serveur, on nettoie localement
         this.clearAuthData();
         return throwError(() => err);
       })
@@ -151,54 +143,52 @@ login(credentials: { phone: string; password: string }): Observable<LoginRespons
   }
 
   /** Récupère l'utilisateur connecté */
-/** Récupère l'utilisateur connecté */
-getMe(): Observable<Contact> {
-  return this.http
-    .get<ApiResponse<{ user: Contact }>>(`${this.apiUrl}/users/me`, {
-      headers: { Accept: 'application/json' }
-    })
-    .pipe(
-      map(res => {
-        if (!res.data?.user) throw new Error('Utilisateur non trouvé');
-        return res.data.user;
-      }),
-      tap(user => {
-        this.currentUserSubject.next(user);
-        localStorage.setItem(this.STORAGE_USER, JSON.stringify(user));
-        localStorage.setItem(this.STORAGE_USER_ID, String(user.id));
-      }),
-      catchError(this.handleError)
-    );
-}
-
+  getMe(): Observable<Contact> {
+    return this.http
+      .get<ApiResponse<{ user: Contact }>>(`${this.apiUrl}/me`, {
+        headers: { Accept: 'application/json' }
+      })
+      .pipe(
+        map(res => {
+          if (!res.data?.user) {
+            throw new Error('Utilisateur non trouvé');
+          }
+          return res.data.user;
+        }),
+        tap(user => {
+          this.currentUserSubject.next(user);
+          localStorage.setItem(this.STORAGE_USER, JSON.stringify(user));
+          localStorage.setItem(this.STORAGE_USER_ID, String(user.id));
+        }),
+        catchError(this.handleError)
+      );
+  }
 
   /** INSCRIPTION */
-/** INSCRIPTION */
-register(payload: Contact): Observable<LoginResponse> {
-  return this.http
-    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/users/clients/create`, payload)
-    .pipe(
-      map(res => {
-        if (!res.data) throw new Error('Erreur lors de la création du compte');
-        return res.data;
-      }),
-      tap(data => {
-        // Vérifier si on a un access_token ET un user valide
-        if (data.access_token && data.user && data.user.id) {
-          this.setAuthData(data.access_token, data.user, data.expires_in);
-        } else if (data.user && data.user.id) {
-          // Si pas de token mais user valide
-          this.currentUserSubject.next(data.user);
-          localStorage.setItem(this.STORAGE_USER, JSON.stringify(data.user));
-          localStorage.setItem(this.STORAGE_USER_ID, String(data.user.id));
-        } else {
-          // Si l'user n'a pas d'ID, on ne stocke rien
-          console.warn('User créé mais sans ID valide:', data.user);
-        }
-      }),
-      catchError(this.handleError)
-    );
-}
+  register(payload: Contact): Observable<LoginResponse> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/users/clients/create`, payload)
+      .pipe(
+        map(res => {
+          if (!res.data) {
+            throw new Error('Erreur lors de la création du compte');
+          }
+          return res.data;
+        }),
+        tap(data => {
+          if (data.access_token && data.user && data.user.id) {
+            this.setAuthData(data.access_token, data.user, data.expires_in);
+          } else if (data.user && data.user.id) {
+            this.currentUserSubject.next(data.user);
+            localStorage.setItem(this.STORAGE_USER, JSON.stringify(data.user));
+            localStorage.setItem(this.STORAGE_USER_ID, String(data.user.id));
+          } else {
+            console.warn('User créé mais sans ID valide:', data.user);
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
 
   /** L'utilisateur est-il authentifié ? */
   isAuthenticated(): boolean {
@@ -219,7 +209,7 @@ register(payload: Contact): Observable<LoginResponse> {
     return Number.isFinite(id) ? Number(id) : null;
   }
 
-  /** Token */
+  /** Token brut */
   getToken(): string | null {
     return this.tokenService.getToken();
   }
@@ -242,5 +232,49 @@ register(payload: Contact): Observable<LoginResponse> {
   /** Infos token (debug) */
   getTokenInfo() {
     return this.tokenService.getTokenInfo();
+  }
+
+  // ---------------------------------------------------------------------
+  // 👇 Partie ROLES pour protéger le menu / les routes
+  // ---------------------------------------------------------------------
+
+  /** Retourne le rôle courant (client, agent, manager, admin) */
+  getRole(): string | null {
+    return this.currentUserValue?.role ?? null;
+  }
+
+  /** L'utilisateur a-t-il exactement ce rôle ? */
+  hasRole(role: string): boolean {
+    const current = this.getRole();
+    return !!current && current === role;
+  }
+
+  /** L'utilisateur a-t-il un des rôles de la liste ? */
+  hasAnyRole(roles: string[]): boolean {
+    const current = this.getRole();
+    if (!current) return false;
+    return roles.includes(current);
+  }
+
+  /** Helpers pratiques pour les menus / guards */
+  isClient(): boolean {
+    return this.hasRole('client');
+  }
+
+  isAgent(): boolean {
+    return this.hasRole('agent');
+  }
+
+  isManager(): boolean {
+    return this.hasRole('manager');
+  }
+
+  isAdmin(): boolean {
+    return this.hasRole('admin');
+  }
+
+  /** Pour les guards de routes (data.roles) */
+  canAccess(roles: string[]): boolean {
+    return this.hasAnyRole(roles);
   }
 }

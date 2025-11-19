@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
 use App\Http\Controllers\Api\StaffRegisterController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Users\UsersIndexController;
+use App\Http\Controllers\Users\UsersShowController;
 
 // EXCHANGE RATE CONTROLLEURS SÉPARÉS
  
@@ -30,6 +32,10 @@ use App\Http\Controllers\Settings\ProfileController;
 Route::post('/login', [AuthController::class, 'login']);
 
  
+// Routes publiques (sans authentification)
+ 
+    Route::get('/users', [UsersIndexController::class, 'index']);
+ 
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Clients
@@ -39,6 +45,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/staff', [StaffRegisterController::class, 'store']); 
 
     Route::get('/me', [ProfileController::class, 'me']);
+
+//    Route::get('/users', [UsersIndexController::class, 'index']);          // OK
+   Route::get('/users/{id}', [UsersShowController::class, 'show']); // OK
 });
 
 
