@@ -38,12 +38,12 @@ export class AppMenu {
         if (!role) {
             this.model = [
                 {
-                    label: 'Dashboard',
+                    label: 'landing',
                     items: [
                         {
                             label: 'Acceuil',
                             icon: 'pi pi-fw pi-home',
-                            routerLink: ['/dashboard'],
+                            routerLink: ['/landing'],
                         },
                     ],
                 },

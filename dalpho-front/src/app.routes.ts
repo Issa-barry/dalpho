@@ -11,16 +11,21 @@ import { Contact } from '@/pages/contact/contact';
 import { RoleGuard } from '@/guards/role.guard';
 
 export const appRoutes: Routes = [
-    {
-        path: 'dashboard',
-        component: AppLayout,
-         children: [
-            { path: '', component: Dashboard },
-            { 
-                path: 'gestion', component: Gestion,
-                canActivate: [RoleGuard],
-                data: { roles: ['agent','agent', 'manager', 'admin'] }
+    // 🟢 Public : page d'accueil
+    { path: '', component: Landing },
 
+    // 🔒 Zone protégée : tout ce qui est dans AppLayout nécessite d'être connecté
+    {
+        path: '',
+        component: AppLayout,
+        canActivate: [authGuard],
+        children: [
+            { path: 'dashboard', component: Dashboard },
+            {
+                path: 'gestion',
+                component: Gestion,
+                canActivate: [RoleGuard],
+                data: { roles: ['agent', 'manager', 'admin'] }
             },
             { path: 'contact', component: Contact },
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
@@ -28,9 +33,13 @@ export const appRoutes: Routes = [
             { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
         ]
     },
+
+    // 🟢 Autres routes publiques
     { path: 'landing', component: Landing },
+    { path: 'login', component: Login },
+    { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
     { path: 'notfound', component: Notfound },
-    { path: '', component: Login },
-    { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') }, //avant
+
+    // 404
     { path: '**', redirectTo: '/notfound' }
 ];
