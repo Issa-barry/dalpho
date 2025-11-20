@@ -65,13 +65,13 @@ export class AppMenu {
                     {
                         label: 'Gestion',
                         icon: 'pi pi-fw pi-cog',
-                        routerLink: ['/dashboard/gestion'],
+                        routerLink: ['/gestion'],
                         roles: ['agent', 'manager', 'admin'],
                     },
                     {
                         label: 'Contact',
                         icon: 'pi pi-fw pi-users',
-                        routerLink: ['/dashboard/contact'],
+                        routerLink: ['/contact'],
                         roles: ['manager', 'admin'],
                     },
                 ],
