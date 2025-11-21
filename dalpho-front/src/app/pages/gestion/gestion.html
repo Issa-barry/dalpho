@@ -2,8 +2,8 @@
 
 <p-toolbar styleClass="mb-6">
             <ng-template #start>
-                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
+                <!-- <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" /> -->
+                <p-button severity="secondary" label="Filtre" icon="pi pi-filter" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
             </ng-template>
 
             <ng-template #end>
@@ -16,13 +16,13 @@
             [value]="taux"
             [rows]="10"
             [columns]="cols"
-            [paginator]="true"
+            [paginator]="false"
             [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
             [tableStyle]="{ 'min-width': '75rem' }"
             [(selection)]="selectedProducts"
             [rowHover]="true"
             dataKey="id"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+            currentPageReportTemplate=" {first} / {last} "
             [showCurrentPageReport]="true"
             [rowsPerPageOptions]="[10, 20, 30]"
         >
@@ -31,7 +31,7 @@
                     <h5 class="m-0">Gestion des taux</h5>
                     <p-iconfield>
                         <p-inputicon styleClass="pi pi-search" />
-                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Recherche..." />
                     </p-iconfield>
                 </div>
             </ng-template>
@@ -40,11 +40,7 @@
                     <!-- <th style="width: 3rem">
                         <p-tableHeaderCheckbox />
                     </th> -->
-                    <th style="min-width: 16rem">Devise</th>
-                    <th pSortableColumn="name" style="min-width:16rem">
-                        Symbole
-                        <p-sortIcon field="name" />
-                    </th>
+                    <th style="min-width: 16rem">Devise</th> 
                     <th>Taux actuelle</th>
                     <th pSortableColumn="price" style="min-width: 8rem">
                         Date
@@ -58,12 +54,11 @@
                         +Bas
                         <p-sortIcon field="rating" />
                     </th>
-                    <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
-                        Status
-                        <p-sortIcon field="inventoryStatus" />
+                     <th  style="min-width: 12rem">
+                        Action
+                        <p-sortIcon field="rating" />
                     </th>
-                    <th style="min-width: 12rem"></th>
-                </tr>
+                 </tr>
             </ng-template>
             <ng-template #body let-rate>
                 <tr>
@@ -71,17 +66,13 @@
                         <p-tableCheckbox [value]="product" />
                     </td> -->
                     <td style="min-width: 12rem"> {{ rate.from_currency.code }}</td>
-                    <td style="min-width: 16rem">{{ rate.from_currency.symbol}}</td>
-                    <td>
+                     <td>
                         {{ rate.rate}}
                         <!-- <img [src]="'https://primefaces.org/cdn/primeng/images/demo/product/' + product.image" [alt]="product.name" style="width: 64px" class="rounded" /> -->
                     </td>
                     <td>{{ rate.updated_at | date:'dd MMM yyyy à HH:mm' }}</td>
                     <td>{{ rate.day_high }}</td>
                     <td>{{ rate.day_low }}</td>
-                    <td>
-                        <!-- <p-tag [value]="product.inventoryStatus" [severity]="getSeverity(product.inventoryStatus)" /> -->
-                    </td>
                     <td>
                         <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(rate)" />
                         <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="deleteProduct(product)" />
@@ -95,17 +86,17 @@
                 <div class="flex flex-col gap-6">
                     <div>
                         <label for="fromCurrency" class="block font-bold mb-3">
-                            Devise vers Franc Guinéen (GNF)
+                            Devise
                         </label>
 
                         <p-select
                             [(ngModel)]="rate.from_currency"
                             inputId="fromCurrency"
                             [options]="[
-                                { label: 'Euro (EUR)', value: 'EUR' },
-                                { label: 'Dollar US (USD)', value: 'USD' },
-                                { label: 'Franc CFA (XOF)', value: 'XOF' },
-                                { label: 'Livre Sterling (GBP)', value: 'GBP' }
+                                { label: 'Euro  (€)', value: 'EUR' },
+                                { label: 'Dollar US $', value: 'USD' },
+                                { label: 'Franc CFA XOF', value: 'XOF' },
+                                { label: 'Livre Sterling GBP', value: 'GBP' }
                             ]"
                             optionLabel="label"
                             optionValue="value"
@@ -118,7 +109,7 @@
                         </small>
                     </div>
                     <div>
-                        <label for="rate" class="block font-bold mb-3">Montant en GNF  </label>
+                        <label for="rate" class="block font-bold mb-3">Taux actuelle en GNF  </label>
                         <input type="text" pInputText id="rate" [(ngModel)]="rate.rate" required autofocus fluid />
                         <small class="text-red-500" *ngIf="submitted && !rate.rate">Name is required.</small>
                     </div>

@@ -256,6 +256,7 @@ export class Gestion implements OnInit {
             this.loadRates();
           },
           error: (err) => {
+            this.loading = false;
             this.messageService.add({
                 severity: 'error',
                 summary: 'Erreur',

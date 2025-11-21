@@ -22,27 +22,31 @@ class ExchangeRateSeeder extends Seeder
         $gbp = Currency::where('code', 'GBP')->firstOrFail();
         $xof = Currency::where('code', 'XOF')->firstOrFail();
 
-        // Taux d'exemple
+        // Taux d'exemple (rate = taux de référence, buy_rate = taux d'achat de la devise)
         $rates = [
             [
-                'from' => $eur,
-                'to'   => $gnf,
-                'rate' => 10700,   // 1 EUR = 10 700 GNF
+                'from'      => $eur,
+                'to'        => $gnf,
+                'rate'      => 10700,   // 1 EUR = 10 700 GNF
+                'buy_rate'  => 10700,   // à ajuster si besoin
             ],
             [
-                'from' => $usd,
-                'to'   => $gnf,
-                'rate' => 10000,   // 1 USD = 10 000 GNF
+                'from'      => $usd,
+                'to'        => $gnf,
+                'rate'      => 10000,   // 1 USD = 10 000 GNF
+                'buy_rate'  => 10000,
             ],
             [
-                'from' => $gbp,
-                'to'   => $gnf,
-                'rate' => 12500,   // 1 GBP = 12 500 GNF
+                'from'      => $gbp,
+                'to'        => $gnf,
+                'rate'      => 12500,   // 1 GBP = 12 500 GNF
+                'buy_rate'  => 12500,
             ],
             [
-                'from' => $xof,
-                'to'   => $gnf,
-                'rate' => 16,      // 1 XOF = 16 GNF (exemple)
+                'from'      => $xof,
+                'to'        => $gnf,
+                'rate'      => 16,      // 1 XOF = 16 GNF (exemple)
+                'buy_rate'  => 16,
             ],
         ];
 
@@ -55,11 +59,13 @@ class ExchangeRateSeeder extends Seeder
                 ],
                 [
                     'rate'           => $data['rate'],
-                    'agent_id'       => $admin->id,   // 👈 plus de NULL
+                    'buy_rate'       => $data['buy_rate'],
+                    'agent_id'       => $admin->id,   // plus de NULL
                     'effective_date' => now(),
                 ]
             );
         }
     }
 }
+
 // php artisan db:seed --class=ExchangeRateSeeder
