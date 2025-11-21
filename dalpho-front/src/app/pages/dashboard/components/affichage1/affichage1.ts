@@ -12,6 +12,8 @@ type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
 interface RateRow {
   pair: string;
+  name:string;
+  symbol:string;
   base: CCY;
   quote: CCY;
   last: number;
@@ -56,9 +58,13 @@ export class Affichage1Component implements OnInit {
 
         this.taux = data.map((item: any) => new ExchangeRate(item));
 
+         console.log(this.taux);
+          
         this.rows = this.taux
           .filter(r => !!r.from_currency?.code && !!r.to_currency?.code)
           .map((r): RateRow => {
+            const name = r.from_currency!.name;
+            const symbol = r.from_currency!.symbol;
             const base  = r.from_currency!.code as CCY;
             const quote = r.to_currency!.code as CCY;
             const last  = r.rate;
@@ -74,6 +80,8 @@ export class Affichage1Component implements OnInit {
 
             return {
               pair: `${base}/${quote}`,
+              symbol,
+              name,
               base,
               quote,
               last,

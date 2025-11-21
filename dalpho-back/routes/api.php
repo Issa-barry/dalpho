@@ -61,7 +61,7 @@ Route::prefix('public')->group(function () {
 
     // Taux pour une paire EUR/GNF
     Route::get('/exchange-rates/current/{from}/{to}', [ExchangeRateIndexController::class, 'getCurrent']);
-
+ 
     // Conversion
     Route::post('/exchange-rates/convert', [ExchangeRateIndexController::class, 'convert']);
 });

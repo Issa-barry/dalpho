@@ -19,16 +19,16 @@
     <ng-template pTemplate="body" let-r>
       <tr>
         <td class="pair">
-          <span class="sym">{{ r.pair }}</span>
-          <p-tag
+             <p-tag
             [value]="r.dir === 'up' ? '↑' : r.dir === 'down' ? '↓' : '•'"
             [severity]="r.dir === 'up' ? 'success' : r.dir === 'down' ? 'danger' : 'info'"
             styleClass="dir-tag"
           ></p-tag>
+          <span class="sym">{{ r.name }}</span>
         </td>
 
         <td [ngClass]="r.dir">
-          1 {{ r.base }} = {{ fmt(r.last, r.quote === 'GNF' || r.quote === 'XOF' ? 0 : 4) }}
+          1 {{ r.symbol }} = {{ fmt(r.last, r.quote === 'GNF' || r.quote === 'XOF' ? 0 : 4) }}
         </td>
 
         <td class="time">{{ r.updatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
