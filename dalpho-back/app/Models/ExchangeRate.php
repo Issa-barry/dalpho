@@ -13,6 +13,7 @@ class ExchangeRate extends Model
         'from_currency_id',
         'to_currency_id',
         'rate',
+        'buy_rate',      
         'agent_id',
         'effective_date',
         'is_current',
@@ -28,12 +29,13 @@ class ExchangeRate extends Model
     ];
 
     protected $casts = [
-        'rate' => 'decimal:4',
-        'day_high' => 'decimal:4',
-        'day_low' => 'decimal:4',
-        'change_abs' => 'decimal:4',
-        'change_pct' => 'decimal:4',
-        'is_current' => 'boolean',
+        'rate'           => 'integer',
+        'buy_rate'       => 'integer',     
+        'day_high'       => 'integer',
+        'day_low'        => 'integer',
+        'change_abs'     => 'integer',
+        'change_pct'     => 'decimal:4',
+        'is_current'     => 'boolean',
         'effective_date' => 'date',
     ];
 
@@ -66,7 +68,7 @@ class ExchangeRate extends Model
         parent::boot();
 
         /**
-         * Lors de la création d’un nouveau taux :
+         * Lors de la création d'un nouveau taux :
          * - désactive les anciens taux
          * - initialise high/low
          * - calcule la tendance (aucune sur création)
@@ -133,7 +135,7 @@ class ExchangeRate extends Model
         });
 
         /**
-         * Après création — on logue l’historique
+         * Après création — on logue l'historique
          */
         static::created(function ($rate) {
             ExchangeRateHistory::create([
@@ -182,7 +184,7 @@ class ExchangeRate extends Model
 
     public function getFormattedRateAttribute()
     {
-        return number_format($this->rate, 4, '.', ' ');
+        return number_format($this->rate, 0, '', ' ');
     }
 
     public function getDescriptionAttribute()

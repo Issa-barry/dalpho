@@ -21,6 +21,7 @@ class ExchangeRateResource extends JsonResource
             'from_currency_id'=> $this->from_currency_id,
             'to_currency_id'  => $this->to_currency_id,
             'rate'            => $this->rate,
+            'buy_rate'       => $this->buy_rate,
             'agent_id'        => $this->agent_id,
             'effective_date'  => $this->effective_date?->toDateString(),
             'is_current'      => (bool) $this->is_current,

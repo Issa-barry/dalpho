@@ -7,36 +7,58 @@ use App\Models\User;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class AuthController extends Controller
 {
     use JsonResponseTrait;
 
+    /**
+     * Connexion via numéro de téléphone + mot de passe
+     */
     public function login(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'email'       => 'required|email',
-                'password'    => 'required',
-                'device_name' => 'required', // ex: "mobile", "web-app"
+            // Validation manuelle
+            $validator = Validator::make($request->all(), [
+                'phone'    => ['required', 'string'],
+                'password' => ['required', 'string'],
             ]);
 
-            $user = User::where('email', $validated['email'])->first();
+            if ($validator->fails()) {
+                return $this->validationErrorResponse(
+                    'Les données fournies sont invalides',
+                    $validator->errors()->toArray()   // 👈 ICI le toArray()
+                );
+            }
 
+            $validated = $validator->validated();
+
+            // Recherche utilisateur par téléphone
+            $user = User::where('phone', $validated['phone'])->first();
+
+            // Vérification du mot de passe
             if (! $user || ! Hash::check($validated['password'], $user->password)) {
                 return $this->unauthorizedResponse('Identifiants invalides');
             }
 
-            // Création du token perso
-            $token = $user->createToken($validated['device_name'])->plainTextToken;
+            // Création du token d'accès
+            $token = $user->createToken('api-token')->plainTextToken;
 
             return $this->successResponse('Connexion réussie', [
-                'token' => $token,
-                'user'  => $user,
+                'access_token' => $token,
+                'user' => [
+                    'id'     => $user->id,
+                    'prenom' => $user->prenom,
+                    'nom'    => $user->nom,
+                    'role'   => $user->role,
+                    'phone'  => $user->phone,
+                    'email'  => $user->email,
+                    'statut' => $user->statut,
+                ]
             ]);
         } catch (Throwable $e) {
-            // ValidationException, ModelNotFound, etc. gérés par handleException
             return $this->handleException($e, 'Erreur lors de la connexion');
         }
     }
@@ -45,7 +67,6 @@ class AuthController extends Controller
     {
         try {
             $token = $request->user()?->currentAccessToken();
-
             if ($token) {
                 $token->delete();
             }
@@ -57,14 +78,12 @@ class AuthController extends Controller
     }
 
     public function logoutAll(Request $request)
-        {
-            try {
-                $request->user()?->tokens()->delete();
-
-                return $this->successResponse('Toutes les sessions ont été déconnectées');
-            } catch (Throwable $e) {
-                return $this->handleException($e, 'Erreur lors de la déconnexion globale');
-            }
+    {
+        try {
+            $request->user()?->tokens()->delete();
+            return $this->successResponse('Toutes les sessions ont été déconnectées');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Erreur lors de la déconnexion globale');
         }
-
+    }
 }

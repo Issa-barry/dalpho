@@ -1,27 +1,38 @@
-
-<div class="grid grid-cols-12 gap-8">
-            <div class="col-span-12 xl:col-span-12">
-                 <app-affichage1 />
-            </div> 
-
-              <!-- <div class="col-span-12 xl:col-span-6">
-                 <app-best-selling-widget />
-            </div>  -->
-
-
-            <div class="col-span-12 xl:col-span-12">
-                 <app-affichage2 />
-            </div> 
-
-           <!-- <div class="col-span-12 xl:col-span-12">
-                 <app-affichage3 />
-            </div>  -->
-
-            <div class="col-span-12 xl:col-span-12">
-                 <app-affichage4 />
-            </div> 
-            <!-- <div class="col-span-12 xl:col-span-6">
-                 <app-change />
-            </div>  -->
-           
+<div class="grid grid-cols-12 gap-4">
+    <!-- Header avec bouton refresh global -->
+    <div class="col-span-12 dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="page-title">Marché des changes — Guinéen</h1>
+             </div>
+            
+            <p-button 
+                label="Actualiser tout" 
+                icon="pi pi-refresh"
+                [raised]="true"
+                (onClick)="refreshAllRates()"
+                [disabled]="isRefreshing"
+                [styleClass]="isRefreshing ? 'refresh-loading' : ''"
+            />
+        </div>
     </div>
+
+    <!-- Les grilles avec effet loading -->
+    <div class="col-span-12 xl:col-span-12 mb-4" [class.loading-overlay]="isRefreshing">
+        <app-affichage1 />
+    </div> 
+
+    <div class="col-span-12 xl:col-span-12 mb-4" [class.loading-overlay]="isRefreshing">
+        <app-affichage2 />
+    </div> 
+<!--     
+    <div class="col-span-12 xl:col-span-8 mb-4">
+        <app-best-selling-widget />
+    </div>  -->
+    
+    <!-- Info -->
+    <div class="info-notice col-span-12">
+        <i class="pi pi-info-circle"></i>
+        <p>Les taux de change sont indicatifs et mis à jour automatiquement toutes les 30&nbsp;secondes.</p>
+    </div>
+</div>

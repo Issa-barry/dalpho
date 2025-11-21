@@ -20,13 +20,14 @@ class ExchangeRateStoreController extends Controller
     public function store(StoreExchangeRateRequest $request): JsonResponse
     {
         try {
-            // On récupère les données validées
+            // Données validées
             $validated = $request->validated();
 
             $exchangeRate = ExchangeRate::create([
                 'from_currency_id' => $validated['from_currency_id'],
                 'to_currency_id'   => $validated['to_currency_id'],
                 'rate'             => $validated['rate'],
+                'buy_rate'       => $validated['buy_rate'] ?? null,  // 👈 ajouté
                 'agent_id'         => auth()->id(),
                 'effective_date'   => $validated['effective_date'] ?? now(),
                 'is_current'       => true,

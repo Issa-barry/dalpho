@@ -17,7 +17,8 @@ class StoreExchangeRateRequest extends FormRequest
         return [
             'from_currency_id' => 'required|exists:currencies,id',
             'to_currency_id'   => 'required|exists:currencies,id',
-            'rate'             => 'required|numeric|min:0',
+            'rate'             => 'required|integer|min:0',
+            'buy_rate'         => 'nullable|integer|min:0',
             'effective_date'   => 'nullable|date',
             'is_current'       => 'nullable|boolean',
         ];

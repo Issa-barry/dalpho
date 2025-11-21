@@ -4,16 +4,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClientRegisterController;
 use App\Http\Controllers\Api\CurrencyController;
 
 // Nouveaux contrôleurs ExchangeRate
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateIndexController;
+ use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateStoreController;
-use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
 
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
-
+use App\Http\Controllers\Api\StaffRegisterController;
+use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Users\UsersIndexController;
+use App\Http\Controllers\Users\UsersShowController;
 
 // EXCHANGE RATE CONTROLLEURS SÉPARÉS
  
@@ -24,9 +28,28 @@ use App\Http\Controllers\Api\ExchangeRateHistoryController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/login', [AuthController::class, 'login']);
+
+ 
+// Routes publiques (sans authentification)
+ 
+    Route::get('/users', [UsersIndexController::class, 'index']);
+ 
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Clients
+    Route::post('/clients', [ClientRegisterController::class, 'store']);
+
+    // Staff : agent, manager, admin
+    Route::post('/staff', [StaffRegisterController::class, 'store']); 
+
+    Route::get('/me', [ProfileController::class, 'me']);
+
+//    Route::get('/users', [UsersIndexController::class, 'index']);          // OK
+   Route::get('/users/{id}', [UsersShowController::class, 'show']); // OK
 });
+
 
 Route::prefix('public')->group(function () {
 
@@ -38,7 +61,7 @@ Route::prefix('public')->group(function () {
 
     // Taux pour une paire EUR/GNF
     Route::get('/exchange-rates/current/{from}/{to}', [ExchangeRateIndexController::class, 'getCurrent']);
-
+ 
     // Conversion
     Route::post('/exchange-rates/convert', [ExchangeRateIndexController::class, 'convert']);
 });
@@ -50,7 +73,7 @@ Route::prefix('public')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -100,7 +123,7 @@ Route::prefix('public')->group(function () {
         Route::get('/', [ExchangeRateIndexController::class, 'index']);
 
         // CRÉER
-        Route::post('/', [ExchangeRateStoreController::class, 'store']);
+        Route::post('/store', [ExchangeRateStoreController::class, 'store']);
 
         // AFFICHER
         Route::get('/{exchangeRate}', [ExchangeRateShowController::class, 'show']);
@@ -128,7 +151,7 @@ Route::prefix('public')->group(function () {
         Route::get('/stats/all', [ExchangeRateHistoryController::class, 'getStats']);
     });
 
-// });
+});
 
 
 /*

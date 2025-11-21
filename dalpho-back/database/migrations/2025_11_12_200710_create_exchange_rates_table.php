@@ -24,7 +24,8 @@ return new class extends Migration
                 ->onDelete('cascade')
                 ->comment('Devise cible');
 
-            $table->decimal('rate', 15, 4)->comment('Taux de change');
+            $table->unsignedBigInteger('rate')
+                ->comment('Taux de change (en centimes/plus petite unité)');
 
             $table->foreignId('agent_id')
                 ->constrained('users')
@@ -37,27 +38,31 @@ return new class extends Migration
                 ->default(true)
                 ->comment('Taux actuel');
 
-            /* ---- Statistiques High/Low (ajoutées) ---- */
-            $table->decimal('day_high', 15, 4)
+            /* ---- Statistiques High/Low ---- */
+            $table->unsignedBigInteger('day_high')
                 ->nullable()
                 ->comment('Plus haut du jour');
 
-            $table->decimal('day_low', 15, 4)
+            $table->unsignedBigInteger('day_low')
                 ->nullable()
                 ->comment('Plus bas du jour');
 
-            /* ---- Variations (ajoutées) ---- */
-            $table->decimal('change_abs', 15, 4)
+            /* ---- Variations ---- */
+            $table->bigInteger('change_abs')
                 ->nullable()
                 ->comment('Variation absolue');
 
-            $table->decimal('change_pct', 15, 4)
+            $table->decimal('change_pct', 8, 4)
                 ->nullable()
                 ->comment('Variation en %');
 
             $table->string('direction', 10)
                 ->nullable()
                 ->comment('Direction: up / down / flat');
+
+            $table->unsignedBigInteger('buy_rate')
+                ->nullable()
+                ->comment('Taux d\'achat');
 
             $table->timestamps();
 

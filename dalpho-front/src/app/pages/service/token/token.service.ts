@@ -54,7 +54,7 @@ export class TokenService {
   /**
    * Nettoie un token invalide
    */
-  private clearInvalidToken(): void {
+  private clearInvalidToken(): void { 
     localStorage.removeItem(this.TOKEN_KEY);
   }
 
