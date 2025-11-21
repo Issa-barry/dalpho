@@ -7,6 +7,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
 import { ExchangeRate, RateDirection } from '@/pages/models/ExchangeRate';
+import { MoneyPipe } from '@/pipes/money.pipe';
 
 type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
@@ -16,6 +17,7 @@ interface RateRow {
   symbol:string;
   base: CCY;
   quote: CCY;
+  buy_rate: number;
   last: number;
   open: number;
   high: number;
@@ -29,7 +31,7 @@ interface RateRow {
 @Component({
   selector: 'app-affichage1',
   standalone: true,
-  imports: [CommonModule, TableModule, TagModule, TooltipModule],
+  imports: [CommonModule, TableModule, TagModule, TooltipModule, MoneyPipe],
   templateUrl: './affichage1.html',
   styleUrl: './affichage1.scss',
 })
@@ -68,6 +70,7 @@ export class Affichage1Component implements OnInit {
             const base  = r.from_currency!.code as CCY;
             const quote = r.to_currency!.code as CCY;
             const last  = r.rate;
+            const buy_rate = r.buy_rate;
 
             const high = r.day_high ?? r.high ?? r.rate;
             const low  = r.day_low  ?? r.low  ?? r.rate;
@@ -84,6 +87,7 @@ export class Affichage1Component implements OnInit {
               name,
               base,
               quote,
+              buy_rate,
               last,
               open,
               high,

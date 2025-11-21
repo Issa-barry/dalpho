@@ -9,8 +9,8 @@ use App\Http\Controllers\Api\CurrencyController;
 
 // Nouveaux contrôleurs ExchangeRate
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateIndexController;
+ use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateStoreController;
-use App\Http\Controllers\Api\ExchangeRate\ExchangeRateShowController;
 use App\Http\Controllers\Api\ExchangeRate\ExchangeRateUpdateDestroyController;
 
 use App\Http\Controllers\Api\ExchangeRateHistoryController;
@@ -123,7 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ExchangeRateIndexController::class, 'index']);
 
         // CRÉER
-        Route::post('/', [ExchangeRateStoreController::class, 'store']);
+        Route::post('/store', [ExchangeRateStoreController::class, 'store']);
 
         // AFFICHER
         Route::get('/{exchangeRate}', [ExchangeRateShowController::class, 'show']);

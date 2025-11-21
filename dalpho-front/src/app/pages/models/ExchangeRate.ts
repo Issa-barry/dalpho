@@ -12,6 +12,8 @@ export class ExchangeRate {
   to_currency_id!: number;
 
   rate: number = 0;
+  buy_rate: number = 0;        // 👈 ajouté
+
   agent_id?: number | null;
 
   effective_date: string = "";
@@ -25,7 +27,7 @@ export class ExchangeRate {
   to_currency: Currency = new Currency();
   agent?: Agent;
 
-  // High / Low (jour ou génériques)
+  // High / Low
   high?: number;
   low?: number;
   day_high?: number;
@@ -41,11 +43,13 @@ export class ExchangeRate {
       Object.assign(this, data);
 
       // numériques (souvent string côté Laravel)
-      if (data.rate !== undefined)      this.rate      = Number(data.rate);
-      if (data.high !== undefined)      this.high      = Number(data.high);
-      if (data.low !== undefined)       this.low       = Number(data.low);
-      if (data.day_high !== undefined)  this.day_high  = Number(data.day_high);
-      if (data.day_low !== undefined)   this.day_low   = Number(data.day_low);
+      if (data.rate !== undefined)       this.rate      = Number(data.rate);
+      if (data.buy_rate !== undefined)   this.buy_rate  = Number(data.buy_rate); // 👈 ajouté
+
+      if (data.high !== undefined)       this.high      = Number(data.high);
+      if (data.low !== undefined)        this.low       = Number(data.low);
+      if (data.day_high !== undefined)   this.day_high  = Number(data.day_high);
+      if (data.day_low !== undefined)    this.day_low   = Number(data.day_low);
       if (data.change_abs !== undefined) this.change_abs = Number(data.change_abs);
       if (data.change_pct !== undefined) this.change_pct = Number(data.change_pct);
 
