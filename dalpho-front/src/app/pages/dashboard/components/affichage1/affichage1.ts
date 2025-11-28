@@ -8,6 +8,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
 import { ExchangeRate, RateDirection } from '@/pages/models/ExchangeRate';
 import { MoneyPipe } from '@/pipes/money.pipe';
+import { SkeletonModule } from 'primeng/skeleton';
 
 type CCY = 'GNF' | 'EUR' | 'USD' | 'XOF' | 'GBP' | 'CHF' | 'CAD';
 
@@ -31,7 +32,7 @@ interface RateRow {
 @Component({
   selector: 'app-affichage1',
   standalone: true,
-  imports: [CommonModule, TableModule, TagModule, TooltipModule, MoneyPipe],
+  imports: [CommonModule, TableModule, TagModule, TooltipModule, MoneyPipe, SkeletonModule],
   templateUrl: './affichage1.html',
   styleUrl: './affichage1.scss',
 })
@@ -39,6 +40,8 @@ export class Affichage1Component implements OnInit {
   taux: ExchangeRate[] = [];
   rows: RateRow[] = [];
   loading = false;
+    skeletonRows = Array.from({ length: 4 }, () => ({}));
+
 
   constructor(private exchangeRateService: ExchangeRateService) {}
 
@@ -100,9 +103,11 @@ export class Affichage1Component implements OnInit {
           });
 
         console.log('rows BDD: ', this.rows);
+        this.loading = false;
       },
       error: (err) => {
         console.error('Erreur chargement taux (affichage1)', err);
+        this.loading = false;
       },
       complete: () => {
         this.loading = false;

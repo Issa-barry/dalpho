@@ -1,7 +1,7 @@
 <div class="fx-board">
 <div class="text-gray-400 font-semibold mb-4">Affichage Liste</div>
   <p-table
-    [value]="rows"
+    [value]="loading ? skeletonRows :rows"
     [rowHover]="true"
     styleClass="p-datatable-sm fx-table "
     [tableStyle]="{ 'min-width': '760px' }"
@@ -13,11 +13,18 @@
         <th>+ Haut</th>
         <th>+ Bas</th>
         <th>Dernière mise à jour</th>
-      </tr>
+      </tr> 
     </ng-template>
 
     <ng-template pTemplate="body" let-r>
-      <tr>
+          <tr *ngIf="loading">
+            <td><p-skeleton width="12rem" /></td>
+            <td><p-skeleton width="10rem" /></td>
+            <td><p-skeleton width="10rem" /></td>
+            <td><p-skeleton width="10rem" /></td>
+             <td class="text-center"><p-skeleton width="6rem" height="2rem" borderRadius="1rem" /></td>
+          </tr>
+      <tr *ngIf="!loading">
         <td class="pair">
              <p-tag
             [value]="r.dir === 'up' ? '↑' : r.dir === 'down' ? '↓' : '•'"
