@@ -1,51 +1,85 @@
-<div class="affichage2-container">
-  <!-- Header simplifié -->
+<div class="affichage2-container"> 
+  <!-- Header -->
   <div class="page-header mb-4">
-<div class="text-gray-400 font-semibold mb-4">Affichage Carte : </div>
-    <!-- <p class="page-subtitle">Mise à jour : {{ lastUpdate | date: 'HH:mm:ss' }}</p> -->
+    <div class="text-gray-400 font-semibold mb-4">Affichage Carte : </div>
   </div>
 
   <!-- GRID des cartes -->
   <div class="currency-grid" [class.loading]="loading">
-    <div class="currency-card card-overview" *ngFor="let c of cards">
-      <div class="card-header">
-        <div class="currency-info">
-          <span class="currency-code">{{ c.code }}</span>
+
+    <!-- CARTES RÉELLES -->
+    <ng-container *ngIf="!loading; else skeletonCards">
+      <div class="currency-card card-overview" *ngFor="let c of cards">
+        <div class="card-header">
+          <div class="currency-info">
+            <span class="currency-code">{{ c.code }}</span>
+          </div>
+          <span class="time">{{ c.lastUpdate | date: 'HH:mm' }}</span>
         </div>
-        <span class="time">{{ c.lastUpdate | date: 'HH:mm' }}</span>
+
+        <div class="card-body">
+          <!-- Ligne équivalence -->
+          <p class="card-subline">
+            {{ c.baseAmount | number:'1.0-0' }} {{ c.code }} ≈ {{ formatNumber(c.baseEquivalent, 0) }} GNF
+          </p>
+
+          <!-- Valeur principale -->
+          <h2 class="overview-value">{{ formatNumber(c.rate, 2) }} GNF</h2>
+
+          <!-- Variation 24h -->
+          <div class="overview-change" [ngClass]="'trend-' + c.trend">
+            <i [class]="'pi pi-arrow-' + (c.trend === 'up' ? 'up' : c.trend === 'down' ? 'down' : 'minus')"></i>
+            <span class="change-amount">{{ formatNumber(Math.abs(c.changeAbs), 2) }}</span>
+            <span class="change-percent">({{ getPercentChange(c) | number:'1.1-1' }}%)</span>
+            <span class="period">24h</span>
+          </div>
+
+          <!-- Courbe -->
+          <div class="area-chart">
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient [attr.id]="'areaGradient-' + c.code" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" [attr.stop-color]="c.color" stop-opacity="0.45" />
+                  <stop offset="100%" [attr.stop-color]="c.color" stop-opacity="0.05" />
+                </linearGradient>
+              </defs>
+              <polygon [attr.points]="getAreaPoints(c.sparklineData)" [attr.fill]="'url(#areaGradient-' + c.code + ')'"></polygon>
+              <polyline [attr.points]="getSparklinePoints(c.sparklineData)" [attr.stroke]="c.color" stroke-width="2" fill="none"></polyline>
+            </svg>
+          </div>
+        </div>
       </div>
+    </ng-container>
 
-      <div class="card-body">
-        <!-- Ligne équivalence -->
-        <p class="card-subline">
-          {{ c.baseAmount | number:'1.0-0' }} {{ c.code }} ≈ {{ formatNumber(c.baseEquivalent, 0) }} GNF
-        </p>
-
-        <!-- Valeur principale -->
-        <h2 class="overview-value">{{ formatNumber(c.rate, 2) }} GNF</h2>
-
-        <!-- Variation 24h -->
-        <div class="overview-change" [ngClass]="'trend-' + c.trend">
-          <i [class]="'pi pi-arrow-' + (c.trend === 'up' ? 'up' : c.trend === 'down' ? 'down' : 'minus')"></i>
-          <span class="change-amount">{{ formatNumber(Math.abs(c.changeAbs), 2) }}</span>
-          <span class="change-percent">({{ getPercentChange(c) | number:'1.1-1' }}%)</span>
-          <span class="period">24h</span>
+    <!-- CARTES SKELETON -->
+    <ng-template #skeletonCards>
+      <div class="currency-card card-overview" *ngFor="let sk of [1,2,3]">
+        <div class="card-header">
+          <div class="currency-info">
+            <p-skeleton width="3rem" height="1rem"></p-skeleton>
+          </div>
+          <p-skeleton width="3rem" height="1rem"></p-skeleton>
         </div>
 
-        <!-- Courbe -->
-        <div class="area-chart">
-          <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-            <defs>
-              <linearGradient [attr.id]="'areaGradient-' + c.code" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" [attr.stop-color]="c.color" stop-opacity="0.45" />
-                <stop offset="100%" [attr.stop-color]="c.color" stop-opacity="0.05" />
-              </linearGradient>
-            </defs>
-            <polygon [attr.points]="getAreaPoints(c.sparklineData)" [attr.fill]="'url(#areaGradient-' + c.code + ')'"></polygon>
-            <polyline [attr.points]="getSparklinePoints(c.sparklineData)" [attr.stroke]="c.color" stroke-width="2" fill="none"></polyline>
-          </svg>
+        <div class="card-body">
+          <!-- Ligne équivalence -->
+          <p-skeleton width="70%" height="0.8rem" class="mb-3"></p-skeleton>
+
+          <!-- Valeur principale -->
+          <p-skeleton width="60%" height="2.4rem" class="mb-4"></p-skeleton>
+
+          <!-- Variation 24h -->
+          <div class="overview-change">
+            <p-skeleton width="50%" height="1rem"></p-skeleton>
+          </div>
+
+          <!-- Courbe -->
+          <div class="area-chart">
+            <p-skeleton width="100%" height="3rem" style="display:block;"></p-skeleton>
+          </div>
         </div>
       </div>
-    </div>
+    </ng-template>
+
   </div>
 </div>

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 
 import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
 import { ExchangeRate } from '@/pages/models/ExchangeRate';
+import { SkeletonModule } from 'primeng/skeleton';
 
 type Trend = 'up' | 'down' | 'flat';
 
@@ -26,7 +27,7 @@ interface CurrencyCard {
 @Component({
   selector: 'app-affichage2',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkeletonModule],
   templateUrl: './affichage2.html',
   styleUrl: './affichage2.scss',
 })
