@@ -33,6 +33,13 @@ interface ExportColumn {
     dataKey: string;
 }
 
+interface CurrencyOption {
+    label: string;
+    value: number;
+    code: string;
+    symbol: string;
+}
+
 @Component({
   selector: 'app-gestion',
   standalone: true,
@@ -59,11 +66,8 @@ interface ExportColumn {
         IconFieldModule,
         ConfirmDialogModule,
         ToastModule,
-          
     ],
 })
-// class et interfaces 
-
 
 export class Gestion implements OnInit {
     rateDialog: boolean = false;
@@ -84,11 +88,16 @@ export class Gestion implements OnInit {
 
     cols!: Column[];
 
-
     // IBA
-     taux: ExchangeRate[] = [];
-     rate: ExchangeRate = new ExchangeRate();
-     loading = false;
+    taux: ExchangeRate[] = [];
+    rate: ExchangeRate = new ExchangeRate();
+    loading = false;
+
+    // Options de devises dynamiques
+    currencyOptions: CurrencyOption[] = [];
+    
+    // Contrôle de l'état d'édition
+    isEditMode: boolean = false;
 
     constructor(
         private productService: ProductService,
@@ -103,28 +112,66 @@ export class Gestion implements OnInit {
 
     ngOnInit() {
         this.loadDemoData();
-         this.loadRates();
+        this.loadRates();
     }
 
     
-  private loadRates(): void {
-    this.loading = true;
-    this.exchangeRateService.getCurrentRates().subscribe({
-      next: (res) => {
-         const data = res.data ?? [];
-         this.taux = data.map((item: any) => new ExchangeRate(item));
-         
-         console.log("taux", this.taux);
-         this.loading = false;
-      },
-      error: (err) => {
-            this.loading = false;
-        },
-        complete: () => {
-        this.loading = false;
-        }
-    });
-  }
+    private loadRates(): void {
+        this.loading = true;
+        this.exchangeRateService.getCurrentRates().subscribe({
+            next: (res) => {
+                const data = res.data ?? [];
+                this.taux = data.map((item: any) => new ExchangeRate(item));
+                
+                // Générer les options de devises à partir des taux chargés
+                this.generateCurrencyOptions();
+                
+                console.log("taux", this.taux);
+                console.log("currencyOptions", this.currencyOptions);
+                this.loading = false;
+            },
+            error: (err) => {
+                this.loading = false;
+            },
+            complete: () => {
+                this.loading = false;
+            }
+        });
+    }
+
+    /**
+     * Génère les options de devises à partir des taux disponibles
+     * Évite les doublons en utilisant un Map
+     */
+    private generateCurrencyOptions(): void {
+        const currencyMap = new Map<number, CurrencyOption>();
+
+        this.taux.forEach(rate => {
+            // Ajouter la devise source (from_currency)
+            if (rate.from_currency && rate.from_currency.id) {
+                currencyMap.set(rate.from_currency.id, {
+                    label: `${rate.from_currency.name} (${rate.from_currency.symbol})`,
+                    value: rate.from_currency.id,
+                    code: rate.from_currency.code,
+                    symbol: rate.from_currency.symbol
+                });
+            }
+
+            // Ajouter la devise cible (to_currency)
+            if (rate.to_currency && rate.to_currency.id) {
+                currencyMap.set(rate.to_currency.id, {
+                    label: `${rate.to_currency.name} (${rate.to_currency.symbol})`,
+                    value: rate.to_currency.id,
+                    code: rate.to_currency.code,
+                    symbol: rate.to_currency.symbol
+                });
+            }
+        });
+
+        // Convertir le Map en tableau et trier par nom
+        this.currencyOptions = Array.from(currencyMap.values())
+            .sort((a, b) => a.label.localeCompare(b.label));
+    }
 
     loadDemoData() {
         this.productService.getProducts().then((data) => {
@@ -153,13 +200,21 @@ export class Gestion implements OnInit {
     }
 
     openNew() {
+        this.rate = new ExchangeRate();
         this.product = {};
         this.submitted = false;
+        this.isEditMode = false; // Mode création
         this.rateDialog = true;
     }
 
-    editProduct(rate: ExchangeRate) {
-         this.rate = new ExchangeRate(rate);
+    editRate(rate: ExchangeRate) {
+        // Créer une copie profonde pour éviter les modifications directes
+        this.rate = new ExchangeRate({
+            ...rate,
+            from_currency_id: rate.from_currency?.id,
+            to_currency_id: rate.to_currency?.id
+        });
+        this.isEditMode = true; // Mode édition
         this.rateDialog = true;
     }
 
@@ -184,6 +239,7 @@ export class Gestion implements OnInit {
     hideDialog() {
         this.rateDialog = false;
         this.submitted = false;
+        this.isEditMode = false; // Réinitialiser le mode
     }
 
     deleteProduct(product: Product) {
@@ -240,57 +296,40 @@ export class Gestion implements OnInit {
 
     saveProduct() {
         this.submitted = true;
-        let _products = this.products();
 
         console.log(this.rate.id, this.rate.rate);
 
-        this.exchangeRateService.updateRate(this.rate.id!, this.rate.rate).subscribe({
-          next: (res) => {
-            this.messageService.add({   
-                severity: 'success',
-                summary: '👉  Succès',
-                detail: 'Taux mis à jour',
-                life: 3000
-            });
-            this.hideDialog();
-            this.loadRates();
-          },
-          error: (err) => {
-            this.loading = false;
+        // Vérifier que les champs requis sont remplis
+        if (!this.rate.id || !this.rate.rate) {
             this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Échec de la mise à jour du taux',
+                severity: 'warn',
+                summary: 'Attention',
+                detail: 'Veuillez remplir tous les champs requis',
                 life: 3000
             });
-          }
+            return;
+        }
+
+        this.exchangeRateService.updateRate(this.rate.id, this.rate.rate).subscribe({
+            next: (res) => {
+                this.messageService.add({   
+                    severity: 'success',
+                    summary: '👉  Succès',
+                    detail: 'Taux mis à jour',
+                    life: 3000
+                });
+                this.hideDialog();
+                this.loadRates();
+            },
+            error: (err) => {
+                this.loading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Échec de la mise à jour du taux',
+                    life: 3000
+                });
+            }
         });
-        
-
-        // if (this.product.name?.trim()) {
-        //     if (this.product.id) {
-        //         _products[this.findIndexById(this.product.id)] = this.product;
-        //         this.products.set([..._products]);
-        //         this.messageService.add({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Updated',
-        //             life: 3000
-        //         });
-        //     } else {
-        //         this.product.id = this.createId();
-        //         this.product.image = 'product-placeholder.svg';
-        //         this.messageService.add({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Created',
-        //             life: 3000
-        //         });
-        //         this.products.set([..._products, this.product]);
-        //     }
-
-        //     this.rateDialog = false;
-        //     this.product = {};
-        // }
     }
 }

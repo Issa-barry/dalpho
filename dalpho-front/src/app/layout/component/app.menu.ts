@@ -63,7 +63,7 @@ export class AppMenu {
                         roles: ['client', 'agent', 'manager', 'admin'],
                     },
                     {
-                        label: 'Gestion',
+                        label: 'Vente',
                         icon: 'pi pi-fw pi-cog',
                         routerLink: ['/gestion'],
                         roles: ['agent', 'manager', 'admin'],
