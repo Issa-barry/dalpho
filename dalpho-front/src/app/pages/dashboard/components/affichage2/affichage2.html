@@ -12,7 +12,7 @@
       <div class="currency-card card-overview" *ngFor="let c of cards">
         <div class="card-header">
           <div class="currency-info">
-            <span class="currency-code">{{ c.code }}</span>
+            <span class="currency-code">{{ c.name }} ({{ c.symbol }})</span>
           </div>
           <span class="time">{{ c.lastUpdate | date: 'HH:mm' }}</span>
         </div>
@@ -20,11 +20,11 @@
         <div class="card-body">
           <!-- Ligne équivalence -->
           <p class="card-subline">
-            {{ c.baseAmount | number:'1.0-0' }} {{ c.code }} ≈ {{ formatNumber(c.baseEquivalent, 0) }} GNF
+            {{ c.baseAmount | number:'1.0-0' }} {{ c.symbol }} ≈ {{ c.baseEquivalent | money}}
           </p>
 
           <!-- Valeur principale -->
-          <h2 class="overview-value">{{ formatNumber(c.rate, 2) }} GNF</h2>
+          <h2 class="overview-value">1{{ c.symbol }} ≈ {{ c.rate | money }}</h2>
 
           <!-- Variation 24h -->
           <div class="overview-change" [ngClass]="'trend-' + c.trend">

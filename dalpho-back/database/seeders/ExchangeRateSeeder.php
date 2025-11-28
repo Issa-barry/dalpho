@@ -11,9 +11,8 @@ class ExchangeRateSeeder extends Seeder
 {
     public function run(): void
     {
-        // On récupère l'admin (adapté à ton système)
+        // Récupération de l'admin
         $admin = User::where('email', 'issabarry67@gmail.com')->firstOrFail();
-        // ou: $admin = User::where('role', User::ROLE_ADMIN)->firstOrFail();
 
         // Devises
         $gnf = Currency::where('code', 'GNF')->firstOrFail();
@@ -21,33 +20,60 @@ class ExchangeRateSeeder extends Seeder
         $usd = Currency::where('code', 'USD')->firstOrFail();
         $gbp = Currency::where('code', 'GBP')->firstOrFail();
         $xof = Currency::where('code', 'XOF')->firstOrFail();
+        
+        // Nouvelles devises
+        $chf = Currency::where('code', 'CHF')->firstOrFail();   // Franc suisse
+        $cad = Currency::where('code', 'CAD')->firstOrFail();   // Dollar canadien
+        $cny = Currency::where('code', 'CNY')->firstOrFail();   // Yuan chinois
 
-        // Taux d'exemple (rate = taux de référence, buy_rate = taux d'achat de la devise)
+        // Taux d'exemple (rate = taux de référence, buy_rate = taux d'achat)
         $rates = [
+            // --- Devises existantes ---
             [
                 'from'      => $eur,
                 'to'        => $gnf,
-                'rate'      => 10700,   // 1 EUR = 10 700 GNF
-                'buy_rate'  => 10700,   // à ajuster si besoin
+                'rate'      => 10700,
+                'buy_rate'  => 10700,
             ],
             [
                 'from'      => $usd,
                 'to'        => $gnf,
-                'rate'      => 10000,   // 1 USD = 10 000 GNF
+                'rate'      => 10000,
                 'buy_rate'  => 10000,
             ],
             [
                 'from'      => $gbp,
                 'to'        => $gnf,
-                'rate'      => 12500,   // 1 GBP = 12 500 GNF
+                'rate'      => 12500,
                 'buy_rate'  => 12500,
             ],
             [
                 'from'      => $xof,
                 'to'        => $gnf,
-                'rate'      => 16,      // 1 XOF = 16 GNF (exemple)
+                'rate'      => 16,
                 'buy_rate'  => 16,
             ],
+      [
+                'from'      => $chf,
+                'to'        => $gnf,
+                'rate'      => 11200,    // Exemple: 1 CHF = 11 200 GNF
+                'buy_rate'  => 11200,
+            ],
+
+            // --- NOUVELLES DEVISES ---
+      
+            // [
+            //     'from'      => $cad,
+            //     'to'        => $gnf,
+            //     'rate'      => 7500,     // Exemple: 1 CAD = 7 500 GNF
+            //     'buy_rate'  => 7500,
+            // ],
+            // [
+            //     'from'      => $cny,
+            //     'to'        => $gnf,
+            //     'rate'      => 1400,     // Exemple: 1 CNY = 1 400 GNF
+            //     'buy_rate'  => 1400,
+            // ],
         ];
 
         foreach ($rates as $data) {
@@ -60,7 +86,7 @@ class ExchangeRateSeeder extends Seeder
                 [
                     'rate'           => $data['rate'],
                     'buy_rate'       => $data['buy_rate'],
-                    'agent_id'       => $admin->id,   // plus de NULL
+                    'agent_id'       => $admin->id,
                     'effective_date' => now(),
                 ]
             );

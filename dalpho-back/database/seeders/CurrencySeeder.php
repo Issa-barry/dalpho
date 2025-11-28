@@ -13,6 +13,8 @@ class CurrencySeeder extends Seeder
      */
     public function run(): void
     {
+        $now = Carbon::now();
+
         $currencies = [
             [
                 'code' => 'GNF',
@@ -20,8 +22,8 @@ class CurrencySeeder extends Seeder
                 'symbol' => 'GNF',
                 'is_active' => true,
                 'is_base_currency' => true,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'code' => 'EUR',
@@ -29,8 +31,8 @@ class CurrencySeeder extends Seeder
                 'symbol' => '€',
                 'is_active' => true,
                 'is_base_currency' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'code' => 'USD',
@@ -38,8 +40,8 @@ class CurrencySeeder extends Seeder
                 'symbol' => '$',
                 'is_active' => true,
                 'is_base_currency' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'code' => 'GBP',
@@ -47,8 +49,8 @@ class CurrencySeeder extends Seeder
                 'symbol' => '£',
                 'is_active' => true,
                 'is_base_currency' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'code' => 'XOF',
@@ -56,13 +58,41 @@ class CurrencySeeder extends Seeder
                 'symbol' => 'CFA',
                 'is_active' => true,
                 'is_base_currency' => false,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+             [
+                'code' => 'CHF',
+                'name' => 'Franc suisse',
+                'symbol' => 'CHF',
+                'is_active' => true,
+                'is_base_currency' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+            // --- NOUVELLES DEVISES ---
+            [
+                'code' => 'CAD',
+                'name' => 'Dollar canadien',
+                'symbol' => 'CA$',
+                'is_active' => false,
+                'is_base_currency' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'code' => 'CNY',
+                'name' => 'Yuan chinois (Renminbi)',
+                'symbol' => '¥',
+                'is_active' => true,
+                'is_base_currency' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
         ];
 
         DB::table('currencies')->insert($currencies);
     }
 }
-
-//php artisan db:seed --class=CurrencySeeder
+// php artisan db:seed --class=CurrencySeeder

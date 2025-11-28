@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ExchangeRateService } from '@/pages/service/rate/echange-rate';
 import { ExchangeRate } from '@/pages/models/ExchangeRate';
 import { SkeletonModule } from 'primeng/skeleton';
+import { MoneyPipe } from '@/pipes/money.pipe';
 
 type Trend = 'up' | 'down' | 'flat';
 
@@ -12,6 +13,7 @@ interface CurrencyCard {
   code: string;
   label: string;
   name: string;
+  symbol?: string;
   pair: string;
   rate: number;
   changeAbs: number;
@@ -27,7 +29,7 @@ interface CurrencyCard {
 @Component({
   selector: 'app-affichage2',
   standalone: true,
-  imports: [CommonModule, SkeletonModule],
+  imports: [CommonModule, SkeletonModule, MoneyPipe],
   templateUrl: './affichage2.html',
   styleUrl: './affichage2.scss',
 })
@@ -67,6 +69,7 @@ export class Affichage2Component implements OnInit {
         this.cards = taux
           .filter((r) => r.to_currency?.code === 'GNF')
           .map((r): CurrencyCard => {
+            const symbol = r.from_currency?.symbol ?? '';
             const fromCode = r.from_currency?.code ?? 'XXX';
             const toCode = r.to_currency?.code ?? '';
             const pair = `${fromCode}/${toCode}`;
@@ -96,6 +99,7 @@ export class Affichage2Component implements OnInit {
               code: fromCode,
               label: fromCode.substring(0, 2),
               name: r.from_currency?.name ?? '',
+              symbol,
               pair,
               rate,
               changeAbs,
